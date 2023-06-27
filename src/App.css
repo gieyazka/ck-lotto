@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@font-face {
+  font-family: "BoonBaanRegular";
+  src: local("BoonBaanRegular"),
+    url("./fonts/BoonBaan/BoonBaan-Regular.ttf") format("truetype");
+  font-weight: bold;
+}
+@font-face {
+  font-family: "BoonBaanBold";
+  src: local("BoonBaanBold"),
+    url("./fonts/BoonBaan/BoonBaan-Bold.ttf") format("truetype");
+  font-weight: bold;
+}
+body{
+  font-family: BoonBaanRegular , BoonBaanBold !important;
+}
+
+.swal2-container {
+  z-index: 999;
+}
