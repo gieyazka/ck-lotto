@@ -109,6 +109,7 @@ export default function App({
       <MaterialReactTable
         columns={columns}
         data={data}
+        enableRowNumbers
         //   enableRowSelection //enable some features
         enableHiding={false}
         enableGlobalFilter={false} //turn off a feature
@@ -116,11 +117,22 @@ export default function App({
         enableColumnFilters={false}
         //   enablePagination={false}
         enableSorting={false}
-        enableBottomToolbar={false}
+        // enableBottomToolbar={false}
         enableExpandAll={false}
         enableFullScreenToggle={false}
         enableDensityToggle={false}
         enableTopToolbar={false}
+        muiTablePaginationProps={{
+          rowsPerPageOptions: [1, 2,3],
+          showFirstButton: true,
+          // showLastButton: false,
+        }}
+        initialState={{
+          pagination: {
+            pageIndex: 0,
+            pageSize: 1,
+          },
+        }}
         //   muiTableBodyRowProps={{ hover: false }}
         muiTablePaperProps={{
           elevation: 0, //change the mui box shadow

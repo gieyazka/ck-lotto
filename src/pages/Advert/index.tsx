@@ -46,6 +46,7 @@ const Ads_Page = () => {
     handleSubmit,
     watch,
     setValue,
+    reset,
     control,
     formState: { errors },
   } = useForm<adsData>();
@@ -102,6 +103,10 @@ const Ads_Page = () => {
     setValue("image", event.target.files[0]);
   };
 
+  const handleCancle = () => {
+    reset();
+  };
+
   // console.log(ads.data?.documents);
   return (
     <div className="">
@@ -130,45 +135,7 @@ const Ads_Page = () => {
               ></textarea>
             </div>
           </div>
-          <div className="flex my-2 space-x-2">
-            <DatePicker
-              format="DD/MM/YYYY"
-              minDate={watch("endDate") && dayjs(watch("endDate"))}
-              value={watch("startDate") ?? undefined}
-              label={t("ads.startDate")}
-              slots={{
-                textField: CustomInput,
-              }}
-              onChange={(e: any) => {
-                if (e !== null) {
-                  if (watch("endDate") !== undefined) {
-                    if (dayjs(e).isAfter(watch("endDate"))) {
-                      setValue("endDate", undefined);
-                    }
-                  }
-                  setValue("startDate", dayjs(e).toDate());
-                  // filterStore.handleChangeStartDate(e);
-                }
-              }}
-            />
-
-            <DatePicker
-              minDate={watch("startDate") && dayjs(watch("startDate"))}
-              format="DD/MM/YYYY"
-              value={watch("endDate") ?? null}
-              label={t("ads.endDate")}
-              slots={{
-                textField: CustomInput,
-              }}
-              onChange={(e: any) => {
-                if (e !== null) {
-                  setValue("endDate", dayjs(e).toDate());
-                  // filterStore.handleChangeStartDate(e);
-                }
-              }}
-            />
-          </div>
-          <div className="flex justify-between  mt-4">
+          <div className="flex my-2 items-end space-x-2">
             <div>
               <input
                 // {...register("image")}
@@ -197,6 +164,47 @@ const Ads_Page = () => {
                 </div>
               </div>
             </div>
+            <div className="flex flex-1 gap-2">
+              <DatePicker
+                format="DD/MM/YYYY"
+                minDate={watch("endDate") && dayjs(watch("endDate"))}
+                value={watch("startDate") ?? null}
+                label={t("ads.startDate")}
+                slots={{
+                  textField: CustomInput,
+                }}
+                onChange={(e: any) => {
+                  if (e !== null) {
+                    if (watch("endDate") !== undefined) {
+                      if (dayjs(e).isAfter(watch("endDate"))) {
+                        setValue("endDate", undefined);
+                      }
+                    }
+                    setValue("startDate", dayjs(e).toDate());
+                    // filterStore.handleChangeStartDate(e);
+                  }
+                }}
+              />
+
+              <DatePicker
+                minDate={watch("startDate") && dayjs(watch("startDate"))}
+                format="DD/MM/YYYY"
+                value={watch("endDate") ?? null}
+                label={t("ads.endDate")}
+                slots={{
+                  textField: CustomInput,
+                }}
+                onChange={(e: any) => {
+                  if (e !== null) {
+                    setValue("endDate", dayjs(e).toDate());
+                    // filterStore.handleChangeStartDate(e);
+                  }
+                }}
+              />
+            </div>
+          </div>
+
+          <div className="flex  mt-4 justify-center">
             {/* </div> */}
             {/* </div> */}
             <div className="flex space-x-4 overflow-clip">
@@ -217,6 +225,7 @@ const Ads_Page = () => {
                   fontFamily: "BoonBaanRegular",
                   backgroundColor: "#FF5555",
                 }}
+                onClick={handleCancle}
                 variant="contained"
               >
                 {t("ads.cancle")}
@@ -240,7 +249,7 @@ const CustomInput = function BrowserInput(props: any) {
   const { inputProps, InputProps, ownerState, inputRef, error, ...other } =
     props;
   return (
-    <div className="relative" style={{ fontFamily: "BoonBaanRegular" }}>
+    <div className="relative w-full" style={{ fontFamily: "BoonBaanRegular" }}>
       <p className="">{props.label}</p>
 
       <div className="relative" ref={InputProps?.ref}>
@@ -252,7 +261,7 @@ const CustomInput = function BrowserInput(props: any) {
           ref={inputRef}
           {...inputProps}
           {...(other as any)}
-          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+          className="bg-gray-50 border  border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
         />
       </div>
     </div>
