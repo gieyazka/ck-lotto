@@ -1,5 +1,8 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-ignore
+
 import { Account, Client, Databases, Query, Storage } from "appwrite";
-import { adsData, lottory_history } from "../utils/type";
+import { adsData, logsData, lottory_history } from "../utils/type";
 import { useMutation, useQueryClient } from 'react-query';
 
 import _ from "lodash";
@@ -13,58 +16,53 @@ client
     .setEndpoint('https://ck.moevedigital.com/v1')
     .setProject('CKLOTTO88');
 
+const addUserLog = async (data: logsData) => {
+    try {
+        const logData = _.cloneDeep(data);
+        const promise = await databases.createDocument(env.VITE_DB, "logs", 'unique()',
+
+            logData
 
 
-
-
-    
-const getAds = async () => {
-    const promise = await databases.listDocuments('lotto', 'ads');
-
-    return promise
+        );
+        return promise
+    } catch (error: any) {
+        throw new Error(error.message)
+    }
 }
-const getLottery_history = async () => {
+
+
+
+
+
+const getLottery_history = async (props: { pageIndex: number, pageSize: number }) => {
     const promise = await databases.listDocuments('lotto', 'lotto_history', [
-        Query.equal('isDelete', false)
+        Query.equal('isDelete', false),
+        Query.orderDesc("date"),
+        Query.limit(props.pageSize),
+        Query.offset((props.pageIndex) * props.pageSize)
 
     ]);
 
     return promise
 }
 const deleteLottery_history = async (docId: string) => {
-    const promise = databases.updateDocument('lotto', 'lotto_history', docId, {
+    const promise = await databases.updateDocument('lotto', 'lotto_history', docId, {
         isDelete: true,
     });
-
-
-
     return promise
 }
 const addLottery_history = async (data: lottory_history) => {
-
     try {
-
         const historyData = _.cloneDeep(data);
-        console.log(historyData);
-        /* Destructuring the `historyData` object and assigning the values of its properties `date` and
-        `lottery_number` to the variables `date` and `lottery_number`, respectively. */
-        // const {date, lottery_number } = historyData;
         const promise = await databases.createDocument(env.VITE_DB, "lotto_history", 'unique()',
             historyData
         );
         return promise
-
     } catch (error: any) {
         throw new Error(error.message)
-
     }
-
 }
-
-
-
-
-
 
 const appWriteAuth = async ({ email, password }: { email: string, password: string }) => {
     const res = await account.createEmailSession(
@@ -93,64 +91,132 @@ const getUser = async (username: string) => {
         'users',
         [
             Query.equal('username', username),
-
         ]
     );
     return res.documents
 }
+const getAds = async (props: { pageIndex: number, pageSize: number }) => {
+    const promise = await databases.listDocuments('lotto', 'ads',
+        [
+            Query.equal('isDelete', false),
+            Query.orderDesc("startDate"),
+            Query.limit(props.pageSize),
+            Query.offset((props.pageIndex) * props.pageSize)
+        ]);
 
+    return promise
+}
+const deleteAds = async (docId: string) => {
+    const promise = databases.updateDocument('lotto', 'ads', docId, {
+        isDelete: true,
+    });
+    return promise
+}
 const addAds = async (data: adsData) => {
-
     try {
-
-
         const resAddFile = await addFile(data.image)
-        if (resAddFile.status === 200) {
-            const adsData = _.cloneDeep(data);
-            adsData.photo = JSON.stringify({
-                url: resAddFile.url,
-                name: resAddFile.name,
-            });
-            const { title, detail, photo, startDate, endDate
-            } = adsData;
-            const promise = await databases.createDocument(env.VITE_DB, "ads", 'unique()', {
-                title, detail, image: photo, startDate, endDate,
-                date: new Date()
-            });
-            return promise
-
-        } else {
-            throw new Error("Cannot Insert Image")
-        }
-    } catch (error: Error) {
+        const adsData = _.cloneDeep(data);
+        adsData.photo = resAddFile;
+        const { title, detail, photo, startDate, endDate
+        } = adsData;
+        const promise = await databases.createDocument(env.VITE_DB, "ads", 'unique()', {
+            title, detail, image: photo, startDate, endDate,
+            date: new Date()
+        });
+        return promise
+    } catch (error: any) {
         throw new Error(error.message)
-
     }
-
 }
 
 
-const addFile = async (file: File | undefined) => {
+const getFeedback = async (props: { pageIndex: number, pageSize: number }) => {
+    const promise = await databases.listDocuments('lotto', 'feedback',
+        [
+            Query.equal('isDelete', false),
+            Query.orderDesc("date"),
+            Query.limit(props.pageSize),
+            Query.offset((props.pageIndex) * props.pageSize)
+        ]);
+
+    return promise
+}
+const deleteFeedback = async (docId: string) => {
+    const promise = databases.updateDocument('lotto', 'feedback', docId, {
+        isDelete: true,
+    });
+    return promise
+}
+
+
+
+
+
+
+const getNews = async (props: { pageIndex: number, pageSize: number }) => {
+    const promise = await databases.listDocuments('lotto', 'news',
+        [
+            Query.equal('isDelete', false),
+            Query.orderDesc("startDate"),
+            Query.limit(props.pageSize),
+            Query.offset((props.pageIndex) * props.pageSize)
+        ]);
+    return promise
+}
+const deleteNews = async (docId: string) => {
+    const promise = databases.updateDocument('lotto', 'news', docId, {
+        isDelete: true,
+    });
+    return promise
+}
+const addNews = async (data: adsData) => {
+    try {
+        const resAddFile = await addFile(data.image)
+        const adsData = _.cloneDeep(data);
+        adsData.photo = resAddFile;
+        const { title, detail, photo, startDate, endDate
+        } = adsData;
+        const promise = await databases.createDocument(env.VITE_DB, "news", 'unique()', {
+            title, detail, image: photo, startDate, endDate,
+            date: new Date()
+        });
+        return promise
+    } catch (error: any) {
+        throw new Error(error.message)
+    }
+}
+const addFile = async (file: File[] | string[] | undefined) => {
     console.log(file);
     if (file === undefined) {
         return
     }
-    const promise = storage.createFile(env.VITE_imageBucket, "unique()", file);
     // const promise = storage.createFile('6491ce1131561710ddb5', "test123", file);
+    const imgArr = []
+    for (let index = 0; index < file.length; index++) {
+        const element = file[index];
+        const promise = storage.createFile(env.VITE_imageBucket, "unique()", element);
+        const res = await promise.then(function (response) {
+            // console.log(response); // Success
+            const url = env.VITE_server + "/storage/buckets/" + env.VITE_imageBucket + "/files/" + response['$id'] + "/view?project=CKLOTTO88"
+            response.url = url
+            response.status = 200
+            return response
+        }, function (error) {
+            error.status = 405
+            return error
+        });
+        if (res.status === 200) {
+            imgArr.push(JSON.stringify({
+                url: res.url,
+                name: res.name,
+            }))
 
-    const res = await promise.then(function (response) {
-        // console.log(response); // Success
-        const url = env.VITE_server + "/storage/buckets/" + env.VITE_imageBucket + "/files/" + response['$id'] + "/view?project=CKLOTTO88"
-        response.url = url
-        response.status = 200
-        return response
-    }, function (error) {
-        console.log(error);
-        error.status = 405
-        return error
-    });
-
-    return res
+        }
+    }
+    return imgArr
 }
 
-export { addFile, addAds, getAds, getUser, appWriteAuth, logout, removeAppwriteSession, getLottery_history, addLottery_history, deleteLottery_history }
+export {
+    addFile, addAds, deleteAds, getAds, getUser, appWriteAuth, logout, removeAppwriteSession, getLottery_history, addLottery_history, deleteLottery_history,
+    getNews, addNews, deleteNews, getFeedback, deleteFeedback, addUserLog
+}

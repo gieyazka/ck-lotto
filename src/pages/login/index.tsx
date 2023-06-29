@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import * as React from "react";
 
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
-import { appWriteAuth, getUser } from "../../utils/service";
+import { addUserLog, appWriteAuth, getUser } from "../../utils/service";
 
 import Avatar from "@mui/material/Avatar";
 import Bg_image from "../../components/bgimage";
@@ -100,11 +101,18 @@ const Login = () => {
         localStorage.removeItem("userRemember");
       }
       // @ts-ignore
+
       localStorage.setItem("isLogin", true);
-      sessionStorage.setItem(
-        "User",
-        JSON.stringify({ ...resLogin, ...user[0] })
-      );
+      const userLogin = { ...resLogin, ...user[0] };
+      sessionStorage.setItem("User", JSON.stringify(userLogin));
+      await addUserLog({
+        type: "login",
+        users: userLogin.$id,
+        timestamp: new Date(),
+        collection : "users",
+      });
+     
+   
       // localStorage.setItem("User", JSON.stringify(resLogin));
       // localStorage.setItem("User", JSON.stringify({}));
       navigate(`/`);

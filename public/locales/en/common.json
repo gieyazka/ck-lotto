@@ -6,6 +6,8 @@
   "createFail": "Create Failed",
   "confirm": "Confirm",
   "cancel": "Cancel",
+  "image": "Image",
+
   "dashboard": {},
   "donotsell": {
     "add_number": "Add number",
@@ -56,6 +58,27 @@
     "delete": "Delete"
   },
   "ads": {
+    "status": "Status",
+    "noStartDate": "Please select start date",
+    "noEndDate": "Please select end date",
+    "noImage": "Please select image",
+    "noTitle": "Please input title",
+    "noDetail": "Please input detail",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "no": "No.",
+    "ads": "Ads",
+    "title": "Title",
+    "details": "Details",
+    "select_photo": "Select Photo",
+    "send": "Submit",
+    "cancle": "Cancle",
+    "photo": "Photo",
+    "date": "Date",
+    "view": "View",
+    "delete": "Delete"
+  },
+  "news": {
     "status": "Status",
     "noStartDate": "Please select start date",
     "noEndDate": "Please select end date",

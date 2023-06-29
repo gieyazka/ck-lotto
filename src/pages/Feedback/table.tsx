@@ -1,5 +1,6 @@
 import { Button, Chip } from "@mui/material";
 import React, { useMemo } from "react";
+import { adsData, feedbackData } from "../../utils/type";
 import i18n, { changeLanguage } from "i18next";
 
 import { Add } from "@mui/icons-material";
@@ -11,7 +12,9 @@ import IconButton from "@mui/material/IconButton";
 import { MRT_ColumnDef } from "material-react-table"; // If using TypeScript (optional, but recommended)
 import { MRT_Localization_FR } from "material-react-table/locales/fr";
 import { MaterialReactTable } from "material-react-table";
+import { UseQueryResult } from "react-query";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 
 //If using TypeScript, define the shape of your data (optional, but recommended)
@@ -25,21 +28,39 @@ interface Data {
 
 //mock data - strongly typed if you are using TypeScript (optional, but recommended)
 
-export default function App({ data }: { data: Data[] }) {
+export default function App({
+  onDelete,
+  query,
+  total,
+  paginationState,
+  setPaginationState,
+  data,
+}: {
+  total: number;
+  data: feedbackData[];
+  onDelete: (docId: string) => Promise<void>;
+  query: UseQueryResult;
+  paginationState: { pageIndex: number; pageSize: number };
+  setPaginationState: any;
+}) {
   const { t } = useTranslation();
   //column definitions - strongly typed if you are using TypeScript (optional, but recommended)
-  const columns = useMemo<MRT_ColumnDef<Data>[]>(
+  const columns = useMemo<MRT_ColumnDef<feedbackData>[]>(
     () => [
+      // {
+      //   accessorFn: (originalRow) => originalRow.no, //alternate way
+      //   id: "no", //id required if you use accessorFn instead of accessorKey
+      //   header: "no",
+      //   Header: (
+      //     <i style={{ fontFamily: "BoonBaanRegular" }}>{t("feedback.no")}</i>
+      //   ), //optional custom markup
+      // },
       {
-        accessorFn: (originalRow) => originalRow.no, //alternate way
-        id: "no", //id required if you use accessorFn instead of accessorKey
-        header: "no",
-        Header: (
-          <i style={{ fontFamily: "BoonBaanRegular" }}>{t("feedback.no")}</i>
-        ), //optional custom markup
-      },
-      {
-        accessorFn: (originalRow) => originalRow.fullName, //alternate way
+        accessorFn: (originalRow) => {
+          return `${originalRow.users.firstname ?? ""} ${
+            originalRow.users.lastname ?? ""
+          }`;
+        },
         id: "fullName", //id required if you use accessorFn instead of accessorKey
         header: "fullName",
         Header: (
@@ -67,7 +88,7 @@ export default function App({ data }: { data: Data[] }) {
         ), //optional custom markup
       },
       {
-        accessorFn: (originalRow) => originalRow.date, //alternate way
+        accessorFn: (originalRow) => dayjs(originalRow.date).format('DD-MM-YYYY'), //alternate way
         id: "date", //id required if you use accessorFn instead of accessorKey
         header: "date",
         Header: (
@@ -97,7 +118,13 @@ export default function App({ data }: { data: Data[] }) {
                 //   // FF5555 : red
                 // }}
               >
+                
                 <IconButton
+                  onClick={async () => {
+                    if (data.$id !== undefined) {
+                      await onDelete(data.$id);
+                    }
+                  }}
                   size="small"
                   aria-label="delete"
                   sx={{ color: "#FF0000" }}
@@ -127,18 +154,28 @@ export default function App({ data }: { data: Data[] }) {
       <MaterialReactTable
         columns={columns}
         data={data}
-        //   enableRowSelection //enable some features
         enableHiding={false}
-        enableGlobalFilter={false} //turn off a feature
+        enableGlobalFilter={false}
         enableColumnActions={false}
         enableColumnFilters={false}
-        //   enablePagination={false}
         enableSorting={false}
-        enableBottomToolbar={false}
         enableExpandAll={false}
         enableFullScreenToggle={false}
         enableDensityToggle={false}
         // enableTopToolbar={false}
+        rowCount={total}
+        onPaginationChange={setPaginationState}
+        enableRowNumbers
+        rowNumberMode="static"
+        manualPagination
+        state={{
+          isLoading: query.isFetching,
+
+          pagination: {
+            pageIndex: paginationState.pageIndex,
+            pageSize: paginationState.pageSize,
+          },
+        }}
         //   muiTableBodyRowProps={{ hover: false }}
         muiTablePaperProps={{
           elevation: 0, //change the mui box shadow

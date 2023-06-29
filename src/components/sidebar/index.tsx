@@ -130,8 +130,7 @@ export default function Layout() {
   const handleDrawerToggle = () => {
     setOpen(!open);
   };
-  const user = JSON.parse(sessionStorage.getItem("User") || "null+");
-  console.log(user);
+  const user = JSON.parse(sessionStorage.getItem("User") || "null");
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
@@ -209,7 +208,7 @@ export default function Layout() {
                       key={lang}
                       defaultValue={lang}
                       onClick={() => {
-                        console.log(lang);
+                        // console.log(lang);
                         changeLanguage(lang);
                       }}
                       value={lang}
@@ -259,7 +258,7 @@ export default function Layout() {
                 <Avatar src={"./src/assets/User.png"} alt={"user profile"} />
                 <div className="flex flex-col  w-full">
                   <p className="text-ellipsis whitespace-nowrap overflow-hidden">{`${user.firstname} ${user.lastname}`}</p>
-                  <p>admin</p>
+                  <p>{`${user.role}`}</p>
                 </div>
               </Stack>
             </Stack>

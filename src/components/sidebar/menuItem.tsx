@@ -11,6 +11,7 @@ import React from "react";
 import { ReactComponent as Setup } from "../../assets/icons/setup.svg";
 import { ReactComponent as Transaction } from "../../assets/icons/tranaction.svg";
 import { ReactComponent as UserManagement } from "../../assets/icons/user_management.svg";
+import { Message } from "iconsax-react";
 
 type menuItem = {
   name: string;
@@ -51,6 +52,13 @@ const data: menuItem[] = [
     url: "ads",
     icon: (props: object) => {
       return <Ads {...props} />;
+    },
+  },
+  {
+    name: "News",
+    url: "news",
+    icon: (props: object) => {
+      return <Message {...props} size="24"  />;
     },
   },
   {

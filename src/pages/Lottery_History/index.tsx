@@ -3,6 +3,7 @@ import * as React from "react";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import {
   addLottery_history,
+  addUserLog,
   deleteLottery_history,
   getLottery_history,
 } from "../../utils/service";
@@ -41,16 +42,55 @@ interface Data {
 }
 
 const Lottery_History = () => {
-  const lotter_history = useQuery("lotter_history", getLottery_history, {
-    // refetchOnMount : false,
-    refetchInterval: false,
-    refetchOnWindowFocus: false,
+  const user = JSON.parse(sessionStorage.getItem("User") || "null");
+
+  const [paginationState, setPaginationState] = React.useState({
+    pageIndex: 0,
+    pageSize: 25,
   });
-  const mutationOption = {
+  //  console.log(paginationState);
+
+  const lotter_history = useQuery(
+    ["lotter_history", paginationState.pageIndex, paginationState.pageSize],
+    () => getLottery_history(paginationState),
+    {
+      // refetchOnMount : false,
+      keepPreviousData: true,
+      refetchInterval: false,
+      refetchOnWindowFocus: false,
+    }
+  );
+  const mutationOptionCreate = {
     onMutate: () => {
       loadingStore.setLoad(true);
     },
-    onSuccess: () => {
+    onSuccess: async (data: any, variables: any, context?: any) => {
+      await addUserLog({
+        type: "create",
+        logData: JSON.stringify(data),
+        users: user.$id,
+        timestamp: new Date(),
+        collection: data.$collectionId,
+        docId: data.$id,
+      });
+
+      lotter_history.refetch();
+      loadingStore.setLoad(false);
+    },
+  };
+  const mutationOptionDelete = {
+    onMutate: () => {
+      loadingStore.setLoad(true);
+    },
+    onSuccess: async (data: any, variables: any, context?: any) => {
+      await addUserLog({
+        type: "delete",
+        logData: JSON.stringify(data),
+        users: user.$id,
+        timestamp: new Date(),
+        collection: data.$collectionId,
+        docId: data.$id,
+      });
       lotter_history.refetch();
       loadingStore.setLoad(false);
     },
@@ -58,10 +98,10 @@ const Lottery_History = () => {
 
   const create_data = useMutation((data: lottory_history) => {
     return addLottery_history(data);
-  }, mutationOption);
+  }, mutationOptionCreate);
   const delete_data = useMutation((docId: string) => {
     return deleteLottery_history(docId);
-  }, mutationOption);
+  }, mutationOptionDelete);
 
   const theme = useTheme();
 
@@ -152,10 +192,15 @@ const Lottery_History = () => {
         });
       });
   };
-
+  const data = React.useMemo(() => {
+    return lotter_history.data?.documents !== undefined
+      ? lotter_history.data.documents
+      : [];
+  }, [lotter_history.data]);
   return (
     <div className="">
       {/* <div style={{fontFamily : "BoonBaanRegular"}}> */}
+
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="flex justify-between items-end">
           <div className="flex gap-2 items-end ">
@@ -169,7 +214,7 @@ const Lottery_History = () => {
               }}
               onChange={(e: any) => {
                 if (e !== null) {
-                  setValue("date", dayjs(e).format("YYYYMMDD"));
+                  setValue("date", dayjs(e).toDate());
                   // filterStore.handleChangeStartDate(e);
                 }
               }}
@@ -202,12 +247,12 @@ const Lottery_History = () => {
       {/* <RenderDialog state={[dialogState, setDialogState]} /> */}
       <div className="text-xl">
         <RenderTable
+          query={lotter_history}
+          paginationState={paginationState}
+          setPaginationState={setPaginationState}
           onDelete={onDelete}
-          data={
-            lotter_history.data?.documents !== undefined
-              ? lotter_history.data.documents
-              : []
-          }
+          total={lotter_history?.data?.total ?? 0}
+          data={data}
         />
       </div>
     </div>
@@ -229,7 +274,7 @@ const CustomInput = function BrowserInput(props: any) {
         </div>
 
         <input
-          focused={0}
+          // focused={0}
           ref={inputRef}
           {...inputProps}
           {...(other as any)}

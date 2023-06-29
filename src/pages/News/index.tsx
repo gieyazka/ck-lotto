@@ -1,13 +1,7 @@
 import { Avatar, Chip } from "@mui/material";
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { QueryCache, useMutation, useQuery } from "react-query";
-import {
-  addAds,
-  addFile,
-  addUserLog,
-  deleteAds,
-  getAds,
-} from "../../utils/service";
+import { addNews, addUserLog, deleteNews, getNews } from "../../utils/service";
 import i18n, { changeLanguage } from "i18next";
 
 import Button from "@mui/material/Button";
@@ -18,15 +12,15 @@ import RenderDialog from "./dialog";
 import RenderTable from "./table";
 import Swal from "sweetalert2";
 import _ from "lodash";
-import { adsData } from "../../utils/type";
 import { callToast } from "../../utils/common";
 import dayjs from "dayjs";
+import { newsData } from "../../utils/type";
 import { useLoading } from "../../store";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
 import { useTranslation } from "react-i18next";
 
-const Ads_Page = () => {
+const News = () => {
   const user = JSON.parse(sessionStorage.getItem("User") || "null");
 
   const loadingStore = useLoading();
@@ -34,9 +28,9 @@ const Ads_Page = () => {
     pageIndex: 0,
     pageSize: 25,
   });
-  const ads = useQuery(
-    ["ads", paginationState.pageIndex, paginationState.pageSize],
-    () => getAds(paginationState),
+  const newsData = useQuery(
+    ["news", paginationState.pageIndex, paginationState.pageSize],
+    () => getNews(paginationState),
     {
       // refetchOnMount : false,
       keepPreviousData: true,
@@ -57,8 +51,9 @@ const Ads_Page = () => {
         collection: data.$collectionId,
         docId: data.$id,
       });
-      ads.refetch();
+      newsData.refetch();
       loadingStore.setLoad(false);
+      reset();
       callToast({
         title: t("deleteSuccess"),
         type: "success",
@@ -85,9 +80,9 @@ const Ads_Page = () => {
         collection: data.$collectionId,
         docId: data.$id,
       });
-      reset();
-      ads.refetch();
+      newsData.refetch();
       loadingStore.setLoad(false);
+      reset();
       callToast({
         title: t("createSuccess"),
         type: "success",
@@ -102,11 +97,11 @@ const Ads_Page = () => {
     },
   };
 
-  const createAds = useMutation((data: adsData) => {
-    return addAds(data);
+  const createnewsData = useMutation((data: newsData) => {
+    return addNews(data);
   }, mutationOptionCreate);
-  const delete_Ads = useMutation((docId: string) => {
-    return deleteAds(docId);
+  const delete_newsData = useMutation((docId: string) => {
+    return deleteNews(docId);
   }, mutationOptionDelete);
 
   const onDelete = async (docId: string) => {
@@ -121,7 +116,7 @@ const Ads_Page = () => {
       reverseButtons: true,
     }).then(async (result) => {
       if (result.isConfirmed) {
-        await delete_Ads.mutateAsync(docId);
+        await delete_newsData.mutateAsync(docId);
       }
     });
   };
@@ -134,17 +129,17 @@ const Ads_Page = () => {
     reset,
     control,
     formState: { errors },
-  } = useForm<adsData>();
+  } = useForm<newsData>();
   const watchedImage = watch("image") ?? [];
   const fileRef = React.useRef<HTMLInputElement | null>(null);
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [dialogState, setDialogState] = React.useState<{
     open: boolean;
-    data: adsData | undefined;
+    data: newsData | undefined;
   }>({ open: false, data: undefined });
 
-  const handleOpenDialog = (data: adsData) => {
+  const handleOpenDialog = (data: newsData) => {
     setDialogState({ open: true, data: data });
   };
 
@@ -152,26 +147,26 @@ const Ads_Page = () => {
     setDialogState({ open: false, data: undefined });
   };
 
-  const onSubmit: SubmitHandler<any> = async (data: adsData) => {
+  const onSubmit: SubmitHandler<any> = async (data: newsData) => {
     const { title, detail, startDate, endDate, image } = data;
     // console.table({ title, detail, startDate, endDate, image });
     if (title === "") {
       callToast({
-        title: t("ads.noTitle"),
+        title: t("news.noTitle"),
         type: "error",
       });
       return;
     }
     if (detail === "") {
       callToast({
-        title: t("ads.noDetail"),
+        title: t("news.noDetail"),
         type: "error",
       });
       return;
     }
     if (startDate === undefined) {
       callToast({
-        title: t("ads.noStartDate"),
+        title: t("news.noStartDate"),
         type: "error",
       });
       return;
@@ -179,20 +174,20 @@ const Ads_Page = () => {
 
     if (endDate === undefined) {
       callToast({
-        title: t("ads.noEndDate"),
+        title: t("news.noEndDate"),
         type: "error",
       });
       return;
     }
     if (image === undefined) {
       callToast({
-        title: t("ads.noImage"),
+        title: t("news.noImage"),
         type: "error",
       });
       return;
     }
 
-    await createAds.mutateAsync(data);
+    await createnewsData.mutateAsync(data);
   };
   const theme = useTheme();
 
@@ -224,7 +219,7 @@ const Ads_Page = () => {
                 id="title"
                 rows={4}
                 className="w-full block p-2.5  text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                placeholder={t("ads.title") || ""}
+                placeholder={t("news.title") || ""}
               ></textarea>
             </div>
             <div className="basis-[60%]">
@@ -233,7 +228,7 @@ const Ads_Page = () => {
                 id="details"
                 rows={4}
                 className="w-full block p-2.5  text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                placeholder={t("ads.details") || ""}
+                placeholder={t("news.details") || ""}
               ></textarea>
             </div>
           </div>
@@ -254,7 +249,7 @@ const Ads_Page = () => {
                   htmlFor="fileInput"
                   className="btn bg-[#D7D7D7] border-[#D7D7D7]  border-2 px-6 py-2  text-[#5A5A5A] whitespace-nowrap"
                 >
-                  {t("ads.select_photo") || ""}
+                  {t("news.select_photo") || ""}
                 </label>
                 <div
                   onClick={() => fileRef.current?.click()}
@@ -280,7 +275,7 @@ const Ads_Page = () => {
                 format="DD/MM/YYYY"
                 minDate={watch("endDate") && dayjs(watch("endDate"))}
                 value={watch("startDate") ?? null}
-                label={t("ads.startDate")}
+                label={t("news.startDate")}
                 slots={{
                   textField: CustomInput,
                 }}
@@ -301,7 +296,7 @@ const Ads_Page = () => {
                 minDate={watch("startDate") && dayjs(watch("startDate"))}
                 format="DD/MM/YYYY"
                 value={watch("endDate") ?? null}
-                label={t("ads.endDate")}
+                label={t("news.endDate")}
                 slots={{
                   textField: CustomInput,
                 }}
@@ -328,7 +323,7 @@ const Ads_Page = () => {
                 }}
                 variant="contained"
               >
-                {t("ads.send")}
+                {t("news.send")}
               </Button>
               <Button
                 sx={{
@@ -339,7 +334,7 @@ const Ads_Page = () => {
                 onClick={handleCancle}
                 variant="contained"
               >
-                {t("ads.cancle")}
+                {t("news.cancle")}
               </Button>
             </div>
           </div>
@@ -347,20 +342,24 @@ const Ads_Page = () => {
       </div>
       <div className="text-xl">
         <RenderTable
-          query={ads}
+          query={newsData}
           onDelete={onDelete}
           paginationState={paginationState}
           setPaginationState={setPaginationState}
           handleOpenDialog={handleOpenDialog}
-          total={ads?.data?.total ?? 0}
-          data={ads.data?.documents !== undefined ? ads.data.documents : []}
+          total={newsData.data?.total ?? 0}
+          data={
+            newsData.data?.documents !== undefined
+              ? newsData.data.documents
+              : []
+          }
         />
       </div>
     </div>
   );
 };
 
-export default Ads_Page;
+export default News;
 
 const CustomInput = function BrowserInput(props: any) {
   const { inputProps, InputProps, ownerState, inputRef, error, ...other } =

@@ -5,6 +5,7 @@ import { Route, Routes } from "react-router-dom";
 
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import Advert from "./pages/Advert";
+import News from "./pages/News/";
 import { AuthRoute } from "./authRoute";
 import { ColorModeContextProvider } from "./contexts/color-mode";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -26,7 +27,6 @@ function App() {
   useEffect(() => {
     const user = JSON.parse(sessionStorage.getItem("User") || "null");
     const isLogin = (localStorage.getItem("isLogin"));
-    // console.log(isLogin,user);
     if (!user && isLogin) {
       removeAppwriteSession();
     }
@@ -52,6 +52,7 @@ function App() {
               <Route path="transaction" element={<Transaction />} />
               <Route path="lotto_history" element={<LotteryHistory />} />
               <Route path="ads" element={<Advert />} />
+              <Route path="news" element={<News />} />
               <Route path="promotions" element={<Promotions />} />
               <Route path="notifications" element={<Notifications />} />
               <Route path="feedback" element={<Feedback />} />

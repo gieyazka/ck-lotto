@@ -223,7 +223,6 @@ const Promotions = () => {
                   aria-label="delete"
                   size="large"
                   onClick={async () => {
-                    console.log(218);
                   }}
                 >
                   <Add />
@@ -283,7 +282,6 @@ const Promotions = () => {
                   aria-label="delete"
                   size="large"
                   onClick={async () => {
-                    console.log(218);
                   }}
                 >
                   <Add />

@@ -34,7 +34,6 @@ const AuthRoute = () => {
   //     });
 
   //     const checkPath = pathName === lastPath;
-  //     // console.log(checkSome, checkPath, pathName, lastPath);
   //     return checkSome && checkPath;
   //   });
   //   return lastPath === "profile" || (user && checkRole) ? (
