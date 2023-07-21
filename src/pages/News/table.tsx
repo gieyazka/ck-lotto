@@ -257,6 +257,7 @@ export default function App({
         enableDensityToggle={false}
         enableTopToolbar={false}
         rowCount={total}
+        manualPagination
         onPaginationChange={setPaginationState}
         state={{
           isLoading: query.isFetching,

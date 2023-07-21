@@ -1,9 +1,49 @@
 import { SweetAlertIcon } from "sweetalert2";
 
-type userData = {
-    firstname: string,
-    lastname: string
+type winPrice = {
+    $id: string;
+    digit: string;
+    multiply: number[];
+    updateDate: Date[]
+    users?: string[]
 }
+type quota = {
+    $id: string;
+    digit: string;
+    quota: number[];
+    updateDate: Date[]
+    users?: string[]
+}
+
+type userData = {
+    $id: string | undefined;
+    username: string,
+    password: string
+    firstname: string,
+    image: File | undefined
+    lastname: string,
+    email: string,
+    address: string,
+    tel: string,
+    $createdAt?: string,
+    status: string,
+    role: string,
+    gender: string,
+    type: string,
+    avatar: string | null | undefined,
+
+}
+type groupData = {
+    $id: string,
+    name: string,
+    users: userData[],
+    isDelete: boolean,
+}
+type lotteryDate = {
+    date: Date,
+    isDelete: boolean
+}
+
 type feedbackData = {
     rate: string;
     comment: string;
@@ -46,6 +86,47 @@ type logsData = {
     varible?: string
 };
 
+type promotionData = {
+    $id: string
+    name: string
+    startDate: Date;
+    expireDate: Date;
+    bonus: number;
+    groups: groupData[]
+    users: userData
+}
+type InvoiceKey = `${string}_invoice`;
+type transaction = {
+    $id: string,
+    $createdAt: Date,
+    $collectionId: string,
+    lottery: string;
+    paymentMethod: string,
+    bankName: string
+    lotteryType: number;
+    amount: number;
+    users: userData
+    InvoiceKey: any;
+    status: string
+    transaction_id: string;
+    calBy: string;
+    transferBy: string;
+    transferAmount: number;
+}
+
+type composate = {
+    digit: string;
+    multiply: number[]
+}
+
+type pointData = {
+    $id: string
+    name: string
+    startDate: Date;
+    expireDate: Date;
+    point: number;
+}
+
 
 type loadingStore = {
     isLoad: boolean;
@@ -58,5 +139,7 @@ type alertType = {
 
 
 export type {
-    adsData, loadingStore, alertType, lottory_history, newsData, feedbackData, userData, logsData
+    transaction, composate, quota,
+    adsData, loadingStore, alertType, lottory_history, newsData, feedbackData, userData, logsData, winPrice, lotteryDate, groupData, promotionData,
+    pointData
 }

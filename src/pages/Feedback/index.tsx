@@ -1,7 +1,7 @@
 import { Controller, SubmitHandler, useForm } from "react-hook-form";
 import { addUserLog, deleteFeedback, getFeedback } from "../../utils/service";
 import i18n, { changeLanguage } from "i18next";
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 
 import { Add } from "@mui/icons-material";
 import Avatar from "@mui/material/Avatar";
@@ -37,17 +37,30 @@ interface Data {
 const Feedback = () => {
   const loadingStore = useLoading();
   const user = JSON.parse(sessionStorage.getItem("User") || "null");
-
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { t } = useTranslation();
-
+  const onChangeSearch = (text: string) => {
+    if (text.length >= 3 || text.length === 0) {
+      queryClient.cancelQueries({
+        queryKey: [
+          "feedback",
+          paginationState.pageIndex,
+          paginationState.pageSize,
+          search,
+        ],
+      });
+      setSearch(text);
+    }
+  };
+  const [search, setSearch] = React.useState("");
   const [paginationState, setPaginationState] = React.useState({
     pageIndex: 0,
     pageSize: 25,
   });
   const feedback = useQuery(
-    ["feedback", paginationState.pageIndex, paginationState.pageSize],
-    () => getFeedback(paginationState),
+    ["feedback", paginationState.pageIndex, paginationState.pageSize, search],
+    () => getFeedback(paginationState, search),
     {
       // refetchOnMount : false,
       keepPreviousData: true,
@@ -62,14 +75,14 @@ const Feedback = () => {
     },
     onSuccess: async (data: any, variables: any, context?: any) => {
       // reset();
-   
+
       await addUserLog({
         type: "delete",
         logData: JSON.stringify(data),
         // varible : JSON.stringify(variables),
         users: user.$id,
-        collection : data.$collectionId,
-        docId : data.$id,
+        collection: data.$collectionId,
+        docId: data.$id,
         timestamp: new Date(),
       });
       feedback.refetch();
@@ -92,14 +105,8 @@ const Feedback = () => {
     return deleteFeedback(docId);
   }, mutationOption);
 
-  console.log(feedback);
   const theme = useTheme();
 
-  const [selectedFile, setSelectedFile] = React.useState<File | null>(null);
-
-  const handleInputChange = (event: any) => {
-    setSelectedFile(event.target.files[0]);
-  };
   const onDelete = async (docId: string) => {
     Swal.fire({
       title: `${t("deleteConfirm")}`,
@@ -107,7 +114,7 @@ const Feedback = () => {
       showCancelButton: true,
       confirmButtonColor: theme.palette.primary.main,
       cancelButtonColor: "#FF5555",
-      confirmButtonText: `${t("comfirm")}`,
+      confirmButtonText: `${t("confirm")}`,
       cancelButtonText: `${t("cancle")}`,
       reverseButtons: true,
     }).then(async (result) => {
@@ -117,10 +124,12 @@ const Feedback = () => {
     });
   };
 
+
   return (
     <div className="">
       <div className="text-xl">
         <RenderTable
+          onChangeSearch={onChangeSearch}
           query={feedback}
           paginationState={paginationState}
           setPaginationState={setPaginationState}

@@ -5,9 +5,11 @@ import {
   addLottery_history,
   addUserLog,
   deleteLottery_history,
+  getLotteryDateTwoYear,
   getLottery_history,
 } from "../../utils/service";
-import { adsData, lottory_history } from "../../utils/type";
+import { adsData, lotteryDate, lottory_history } from "../../utils/type";
+import dayjs, { Dayjs } from "dayjs";
 import i18n, { changeLanguage } from "i18next";
 import { useMutation, useQuery } from "react-query";
 
@@ -30,7 +32,6 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import bg_image from "../../../assets/login_image.svg";
 import { callToast } from "../../utils/common";
-import dayjs from "dayjs";
 import { useLoading } from "../../store";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@mui/material/styles";
@@ -104,7 +105,16 @@ const Lottery_History = () => {
   }, mutationOptionDelete);
 
   const theme = useTheme();
-
+  const lotterDateQuery = useQuery(
+    ["lotterDate"],
+    () => getLotteryDateTwoYear(),
+    {
+      refetchOnMount: "always",
+      keepPreviousData: true,
+      refetchInterval: false,
+      refetchOnWindowFocus: false,
+    }
+  );
   const loadingStore = useLoading();
   const {
     register,
@@ -128,7 +138,7 @@ const Lottery_History = () => {
       showCancelButton: true,
       confirmButtonColor: theme.palette.primary.main,
       cancelButtonColor: "#FF5555",
-      confirmButtonText: `${t("comfirm")}`,
+      confirmButtonText: `${t("confirm")}`,
       cancelButtonText: `${t("cancle")}`,
       reverseButtons: true,
     }).then(async (result) => {
@@ -176,22 +186,55 @@ const Lottery_History = () => {
       });
       return;
     }
-
-    create_data
-      .mutateAsync(data)
-      .then(() => {
-        callToast({
-          title: t("createSuccess"),
-          type: "success",
-        });
-      })
-      .catch(() => {
-        callToast({
-          title: t("createFail"),
-          type: "error",
-        });
+    const checkDay = lotter_history.data?.documents?.some((d : lottory_history) =>
+      dayjs(d.date).isSame(dayjs(date).startOf("day"))
+    );
+    if (checkDay) {
+      callToast({
+        title: t("lotto_history.sameDate"),
+        type: "error",
       });
+      return;
+    }
+    Swal.fire({
+      title: `${t("createConfirm")}`,
+      icon: "info",
+      showCancelButton: true,
+      confirmButtonColor: theme.palette.primary.main,
+      cancelButtonColor: "#FF5555",
+      confirmButtonText: `${t("confirm")}`,
+      cancelButtonText: `${t("cancle")}`,
+      reverseButtons: true,
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        create_data
+          .mutateAsync(data)
+          .then(() => {
+            callToast({
+              title: t("createSuccess"),
+              type: "success",
+            });
+          })
+          .catch(() => {
+            callToast({
+              title: t("createFail"),
+              type: "error",
+            });
+          });
+      }
+    });
   };
+
+  const checkActiveDay = (date: Dayjs) => {
+    const day = date.day();
+    const forDate = date.format("YYYY MM DD");
+    const checkDay = lotterDateQuery.data?.documents?.some((d : lotteryDate) =>
+      dayjs(d.date).isSame(date.startOf("day"))
+    );
+ 
+    return !checkDay;
+  };
+
   const data = React.useMemo(() => {
     return lotter_history.data?.documents !== undefined
       ? lotter_history.data.documents
@@ -205,6 +248,7 @@ const Lottery_History = () => {
         <div className="flex justify-between items-end">
           <div className="flex gap-2 items-end ">
             <DatePicker
+              shouldDisableDate={checkActiveDay}
               format="DD/MM/YYYY"
               // minDate={watch("endDate") && dayjs(watch("endDate"))}
               value={dayjs(watch("date"), "YYYYMMDD") ?? undefined}
@@ -227,7 +271,7 @@ const Lottery_History = () => {
               value={watch("lottery_number")}
               onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                 const text = event.target.value;
-                const sanitizedValue = text.replace(/[^1-9]/g, "");
+                const sanitizedValue = text.replace(/[^0-9]/g, "");
                 setValue("lottery_number", sanitizedValue);
               }}
               // {...register("lottery_number")}

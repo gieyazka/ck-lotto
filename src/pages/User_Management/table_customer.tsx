@@ -1,4 +1,16 @@
 import React, { useMemo } from "react";
+import {
+  UseMutationResult,
+  UseQueryResult,
+  useMutation,
+  useQuery,
+} from "react-query";
+import {
+  addUserLog,
+  deleteUser,
+  getCustomer,
+  getUserSession,
+} from "../../utils/service";
 import i18n, { changeLanguage } from "i18next";
 
 import { Add } from "@mui/icons-material";
@@ -12,86 +24,114 @@ import IconButton from "@mui/material/IconButton";
 import { MRT_ColumnDef } from "material-react-table"; // If using TypeScript (optional, but recommended)
 import { MRT_Localization_FR } from "material-react-table/locales/fr";
 import { MaterialReactTable } from "material-react-table";
+import Swal from "sweetalert2";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import { callToast } from "../../utils/common";
+import dayjs from "dayjs";
+import { useLoading } from "../../store";
 import { useTheme } from "@mui/material/styles";
 import { useTranslation } from "react-i18next";
+import { userData } from "../../utils/type";
 
 //If using TypeScript, define the shape of your data (optional, but recommended)
-interface Data {
-  no: string;
-  promotion_name: string;
-  bonus: string;
-  start_date: string;
-  expire_date: string;
-  status: string;
-}
 
 //mock data - strongly typed if you are using TypeScript (optional, but recommended)
 
-export default function App({ data }: { data: Data[] }) {
+export default function App({
+  onOpenDialog,
+  onChangeSearch,
+  userData,
+  deleteUser,
+  paginationState,
+  setPaginationState,
+  onDelete,
+}: {
+  onOpenDialog: (data: any) => void;
+
+  onChangeSearch: (text: string) => void;
+  userData: UseQueryResult<any>;
+  deleteUser: UseMutationResult<any, unknown, string, void>;
+  paginationState: { pageIndex: number; pageSize: number };
+  setPaginationState: (props: any) => void;
+  onDelete: (docId: string) => void;
+}) {
   const theme = useTheme();
 
   const { t } = useTranslation();
-  //column definitions - strongly typed if you are using TypeScript (optional, but recommended)
-  const columns = useMemo<MRT_ColumnDef<Data>[]>(
+
+  const columns = useMemo<MRT_ColumnDef<userData>[]>(
     () => [
+      // {
+      //   accessorFn: (originalRow) => originalRow.no, //alternate way
+      //   id: "no", //id required if you use accessorFn instead of accessorKey
+      //   header: "no",
+      //   Header: (
+      //     <i style={{ fontFamily: "BoonBaanRegular" }}>{t("user_management.no")}</i>
+      //   ), //optional custom markup
+      // },
       {
-        accessorFn: (originalRow) => originalRow.no, //alternate way
-        id: "no", //id required if you use accessorFn instead of accessorKey
-        header: "no",
-        Header: (
-          <i style={{ fontFamily: "BoonBaanRegular" }}>{t("promotions.no")}</i>
-        ), //optional custom markup
-      },
-      {
-        accessorFn: (originalRow) => originalRow.promotion_name, //alternate way
+        accessorFn: (originalRow) => {
+          return `${originalRow.firstname} ${originalRow.lastname}`;
+          return `${originalRow.firstname} ${originalRow.lastname}`;
+        }, //alternate way
         id: "promotion_name", //id required if you use accessorFn instead of accessorKey
         header: "promotion_name",
         Header: (
           <i style={{ fontFamily: "BoonBaanRegular" }}>
-            {t("promotions.promotion_name")}
+            {t("user_management.name")}
           </i>
         ), //optional custom markup
       },
       {
-        accessorFn: (originalRow) => originalRow.bonus, //alternate way
+        accessorFn: (originalRow) => originalRow.email, //alternate way
         id: "bonus", //id required if you use accessorFn instead of accessorKey
         header: "bonus",
         Header: (
           <i style={{ fontFamily: "BoonBaanRegular" }}>
-            {t("promotions.bonus")}
+            {t("user_management.email")}
           </i>
         ), //optional custom markup
       },
       {
-        accessorFn: (originalRow) => originalRow.start_date, //alternate way
+        accessorFn: (originalRow) => originalRow.address, //alternate way
         id: "start_date", //id required if you use accessorFn instead of accessorKey
         header: "start_date",
         Header: (
           <i style={{ fontFamily: "BoonBaanRegular" }}>
-            {t("promotions.start_date")}
+            {t("user_management.address")}
           </i>
         ), //optional custom markup
       },
       {
-        accessorFn: (originalRow) => originalRow.expire_date, //alternate way
+        accessorFn: (originalRow) => originalRow.tel, //alternate way
+        id: "tel", //id required if you use accessorFn instead of accessorKey
+        header: "tel",
+        Header: (
+          <i style={{ fontFamily: "BoonBaanRegular" }}>
+            {t("user_management.tel")}
+          </i>
+        ), //optional custom markup
+      },
+      {
+        accessorFn: (originalRow) =>
+          dayjs(originalRow.$createdAt).format("DD-MM-YYYY"), //alternate way
         id: "expire_date", //id required if you use accessorFn instead of accessorKey
         header: "expire_date",
         Header: (
-          <i style={{ fontFamily: "BoonBaanRegular" }}>
-            {t("promotions.expire_date")}
-          </i>
+          <div style={{ textAlign: "center", fontFamily: "BoonBaanRegular" }}>
+            {t("user_management.registerDate")}
+          </div>
         ), //optional custom markup
       },
 
       {
         accessorFn: (originalRow) => null, //alternate way
-        id: "action", //id required if you use accessorFn instead of accessorKey
-        header: "action",
+        id: "status", //id required if you use accessorFn instead of accessorKey
+        header: "status",
         Header: (
-          <i style={{ fontFamily: "BoonBaanRegular" }}>
-            {t("promotions.status")}
-          </i>
+          <div style={{ textAlign: "center", fontFamily: "BoonBaanRegular" }}>
+            {t("user_management.status")}
+          </div>
         ), //optional custom markup
         Cell: ({ cell }) => {
           const data = cell.row.original;
@@ -107,7 +147,16 @@ export default function App({ data }: { data: Data[] }) {
                 // }}
               >
                 <Chip
-                  sx={{ backgroundColor: "#40CFFF", color: "white" }}
+                  sx={{
+                    fontFamily: "BoonBaanRegular",
+                    backgroundColor:
+                      data.status === "active"
+                        ? "#94D18A"
+                        : data.status === "active"
+                        ? "#FF5555"
+                        : "#40CFFF",
+                    color: "white",
+                  }}
                   label={data.status}
                 />
                 {/* <IconButton size="small" aria-label="delete" sx={{color : '#40CFFF'}}>
@@ -120,12 +169,12 @@ export default function App({ data }: { data: Data[] }) {
       },
       {
         accessorFn: (originalRow) => null, //alternate way
-        id: "action", //id required if you use accessorFn instead of accessorKey
-        header: "action",
+        id: "edit", //id required if you use accessorFn instead of accessorKey
+        header: "edit",
         Header: (
-          <i style={{ fontFamily: "BoonBaanRegular" }}>
-            {t("promotions.edit")}
-          </i>
+          <div style={{ textAlign: "center", fontFamily: "BoonBaanRegular" }}>
+            {t("user_management.edit")}
+          </div>
         ),
         Cell: ({ cell }) => {
           const data = cell.row.original;
@@ -142,8 +191,11 @@ export default function App({ data }: { data: Data[] }) {
               >
                 <IconButton
                   size="small"
-                  aria-label="delete"
+                  aria-label="edit"
                   sx={{ color: "#FF0000" }}
+                  onClick={() => {
+                    onOpenDialog(data);
+                  }}
                 >
                   <EditIcon style={{ fill: theme.palette.primary.main }} />
                 </IconButton>
@@ -154,12 +206,12 @@ export default function App({ data }: { data: Data[] }) {
       },
       {
         accessorFn: (originalRow) => null, //alternate way
-        id: "action", //id required if you use accessorFn instead of accessorKey
-        header: "action",
+        id: "delete", //id required if you use accessorFn instead of accessorKey
+        header: "delete",
         Header: (
-          <i style={{ fontFamily: "BoonBaanRegular" }}>
-            {t("promotions.delete")}
-          </i>
+          <div style={{ textAlign: "center", fontFamily: "BoonBaanRegular" }}>
+            {t("user_management.delete")}
+          </div>
         ),
         Cell: ({ cell }) => {
           const data = cell.row.original;
@@ -178,6 +230,11 @@ export default function App({ data }: { data: Data[] }) {
                   size="small"
                   aria-label="delete"
                   sx={{ color: "#FF0000" }}
+                  onClick={async () => {
+                    if (data.$id !== undefined) {
+                      await onDelete(data.$id);
+                    }
+                  }}
                 >
                   <DeleteIcon style={{ fill: "red" }} />
                 </IconButton>
@@ -194,22 +251,35 @@ export default function App({ data }: { data: Data[] }) {
     <div className="mt-2 ">
       <MaterialReactTable
         columns={columns}
-        data={data}
+        data={
+          userData.data?.documents !== undefined ? userData.data.documents : []
+        }
         //   enableRowSelection //enable some features
         enableHiding={false}
         enableGlobalFilter={false} //turn off a feature
         enableColumnActions={false}
         enableColumnFilters={false}
-          enablePagination={false}
+        // enablePagination={false}
         enableSorting={false}
-        enableBottomToolbar={false}
+        // enableBottomToolbar={false}
         enableExpandAll={false}
         enableFullScreenToggle={false}
         enableDensityToggle={false}
         // enableTopToolbar={false}
         //   muiTableBodyRowProps={{ hover: false }}
+        manualPagination
+        rowCount={userData.data?.total ?? 0}
+        onPaginationChange={setPaginationState}
+        state={{
+          isLoading: userData.isFetching,
+
+          pagination: {
+            pageIndex: paginationState.pageIndex,
+            pageSize: paginationState.pageSize,
+          },
+        }}
         muiTopToolbarProps={{
-          sx : {
+          sx: {
             backgroundColor: "#F9F9F9",
           },
         }}
@@ -225,16 +295,6 @@ export default function App({ data }: { data: Data[] }) {
           sx: {
             borderRadius: "8px",
             fontFamily: "BoonBaanRegular",
-            //   border: "1px solid #E0E0E0",
-            // "& .MuiTableContainer-root th:first-child" : {
-            //   borderTopLeftRadius:" 10px",
-            //   borderBottomLeftRadius: "10px"
-            // },
-
-            // "& .MuiTableContainer-root th:last-child" : {
-            //   borderTopRightRadius: "10px",
-            //   borderBottomRightRadius: "10px"
-            // },
           },
         }}
         muiTableHeadCellProps={{
@@ -242,11 +302,9 @@ export default function App({ data }: { data: Data[] }) {
             "& .Mui-TableHeadCell-Content": {
               justifyContent: "center",
             },
-            //   borderRadius: "8px",
 
             fontFamily: "BoonBaanRegular",
             backgroundColor: "#F9F9F9",
-            // border: "1px solid #E0E0E0",
           },
         }}
         muiTableBodyCellProps={{
@@ -254,16 +312,15 @@ export default function App({ data }: { data: Data[] }) {
             padding: "8px 0px",
             fontFamily: "BoonBaanRegular",
             textAlign: "center",
-            //   border: "1px solid #E0E0E0",
           },
         }}
         renderTopToolbarCustomActions={({ table }) => {
-          const handleDeactivate = () => {
-            table.getSelectedRowModel().flatRows.map((row) => {
-              alert("deactivating " + row.getValue("name"));
-            });
-          };
 
+          const handleChange = (e)=>{
+           
+            onChangeSearch(e.target.value)
+         
+          }
           return (
             <div className="w-full flex justify-end mx-2 ">
               <div className="relative w-1/4 ">
@@ -271,7 +328,8 @@ export default function App({ data }: { data: Data[] }) {
                   type="text"
                   id="voice-search"
                   className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full  py-2.5 px-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                  placeholder={t("feedback.search") || ""}
+                  placeholder={t("user_management.search") || ""}
+                  onChange={handleChange}
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                   <svg
@@ -281,13 +339,13 @@ export default function App({ data }: { data: Data[] }) {
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <g clip-path="url(#clip0_344_1823)">
+                    <g clipPath="url(#clip0_344_1823)">
                       <path
                         d="M18.3334 18.3333L16.6667 16.6666M9.58341 17.5C10.623 17.5 11.6525 17.2952 12.613 16.8973C13.5735 16.4995 14.4462 15.9164 15.1813 15.1812C15.9165 14.4461 16.4996 13.5734 16.8975 12.6129C17.2953 11.6524 17.5001 10.6229 17.5001 9.58329C17.5001 8.54366 17.2953 7.51421 16.8975 6.55372C16.4996 5.59322 15.9165 4.72049 15.1813 3.98536C14.4462 3.25023 13.5735 2.6671 12.613 2.26925C11.6525 1.8714 10.623 1.66663 9.58341 1.66663C7.48378 1.66663 5.47015 2.5007 3.98549 3.98536C2.50082 5.47003 1.66675 7.48366 1.66675 9.58329C1.66675 11.6829 2.50082 13.6966 3.98549 15.1812C5.47015 16.6659 7.48378 17.5 9.58341 17.5Z"
                         stroke="#B9BCC7"
-                        stroke-width="1.5"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                       />
                     </g>
                     <defs>

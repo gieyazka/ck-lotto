@@ -1,6 +1,6 @@
 import Swal from "sweetalert2";
 import { alertType } from "./type"
-
+import _ from 'lodash'
 const callToast = ({ title, type }: alertType) => {
     const Toast = Swal.mixin({
         toast: true,
@@ -31,6 +31,11 @@ const callSweetAlert = ({ title, type }: alertType) => {
 
 }
 
+const compareArraysById = (array1: any, array2: any) => {
+    const compareData = _.differenceBy([...array1, ...array2], '$id');
+    const uniqueArray = _.uniqBy(compareData, '$id');
+    return uniqueArray;
+}
 export {
-    callToast,callSweetAlert
+    callToast, callSweetAlert, compareArraysById
 }

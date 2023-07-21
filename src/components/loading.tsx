@@ -11,7 +11,7 @@ export default function RenderLoading() {
   return (
     <div>
       <Backdrop
-        sx={{ color: "#fff", zIndex: (theme) => 999 }}
+        sx={{ color: "#fff", zIndex: (theme) => 99999}}
         open={loadingStore.isLoad}
       >
         <CircularProgress color="inherit" />

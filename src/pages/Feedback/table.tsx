@@ -35,6 +35,7 @@ export default function App({
   paginationState,
   setPaginationState,
   data,
+  onChangeSearch
 }: {
   total: number;
   data: feedbackData[];
@@ -42,6 +43,7 @@ export default function App({
   query: UseQueryResult;
   paginationState: { pageIndex: number; pageSize: number };
   setPaginationState: any;
+  onChangeSearch: (text: string) => void;
 }) {
   const { t } = useTranslation();
   //column definitions - strongly typed if you are using TypeScript (optional, but recommended)
@@ -98,8 +100,8 @@ export default function App({
 
       {
         accessorFn: (originalRow) => null, //alternate way
-        id: "action", //id required if you use accessorFn instead of accessorKey
-        header: "action",
+        id: "delete", //id required if you use accessorFn instead of accessorKey
+        header: "delete",
         Header: (
           <i style={{ fontFamily: "BoonBaanRegular" }}>
             {t("promotions.delete")}
@@ -222,23 +224,11 @@ export default function App({
           },
         }}
         renderTopToolbarCustomActions={({ table }) => {
-          const handleDeactivate = () => {
-            table.getSelectedRowModel().flatRows.map((row) => {
-              alert("deactivating " + row.getValue("name"));
-            });
-          };
-
-          const handleActivate = () => {
-            table.getSelectedRowModel().flatRows.map((row) => {
-              alert("activating " + row.getValue("name"));
-            });
-          };
-
-          const handleContact = () => {
-            table.getSelectedRowModel().flatRows.map((row) => {
-              alert("contact " + row.getValue("name"));
-            });
-          };
+          const handleChange = (e)=>{
+           
+            onChangeSearch(e.target.value)
+         
+          }
 
           return (
             <div className="w-full flex justify-end mx-2">
@@ -248,6 +238,7 @@ export default function App({
                   id="voice-search"
                   className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full  py-2.5 px-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   placeholder={t("feedback.search") || ""}
+                  onChange={handleChange}
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3">
                   <svg
@@ -257,12 +248,12 @@ export default function App({
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                   >
-                    <g clip-path="url(#clip0_344_1823)">
+                    <g clipPath="url(#clip0_344_1823)">
                       <path
                         d="M18.3334 18.3333L16.6667 16.6666M9.58341 17.5C10.623 17.5 11.6525 17.2952 12.613 16.8973C13.5735 16.4995 14.4462 15.9164 15.1813 15.1812C15.9165 14.4461 16.4996 13.5734 16.8975 12.6129C17.2953 11.6524 17.5001 10.6229 17.5001 9.58329C17.5001 8.54366 17.2953 7.51421 16.8975 6.55372C16.4996 5.59322 15.9165 4.72049 15.1813 3.98536C14.4462 3.25023 13.5735 2.6671 12.613 2.26925C11.6525 1.8714 10.623 1.66663 9.58341 1.66663C7.48378 1.66663 5.47015 2.5007 3.98549 3.98536C2.50082 5.47003 1.66675 7.48366 1.66675 9.58329C1.66675 11.6829 2.50082 13.6966 3.98549 15.1812C5.47015 16.6659 7.48378 17.5 9.58341 17.5Z"
                         stroke="#B9BCC7"
-                        stroke-width="1.5"
-                        stroke-linecap="round"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
                         stroke-linejoin="round"
                       />
                     </g>

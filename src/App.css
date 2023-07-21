@@ -18,5 +18,5 @@ body{
 }
 
 .swal2-container {
-  z-index: 999;
+  z-index: 20000 !important;
 }

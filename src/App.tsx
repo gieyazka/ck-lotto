@@ -5,7 +5,6 @@ import { Route, Routes } from "react-router-dom";
 
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import Advert from "./pages/Advert";
-import News from "./pages/News/";
 import { AuthRoute } from "./authRoute";
 import { ColorModeContextProvider } from "./contexts/color-mode";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -14,10 +13,12 @@ import GlobalStyles from "@mui/material/GlobalStyles";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import Login from "./pages/login";
 import LotteryHistory from "./pages/Lottery_History";
+import News from "./pages/News/";
 import NotSell from "./pages/not_sell";
 import Notifications from "./pages/Notifications";
 import Promotions from "./pages/Promotions";
 import RenderLoading from "./components/loading";
+import Setup from "./pages/Setup";
 import Sidebar from "./components/sidebar";
 import Transaction from "./pages/Transaction";
 import User_Management from "./pages/User_Management";
@@ -57,6 +58,7 @@ function App() {
               <Route path="notifications" element={<Notifications />} />
               <Route path="feedback" element={<Feedback />} />
               <Route path="user_management" element={<User_Management />} />
+              <Route path="setup" element={<Setup />} />
               <Route path="/*" element={<div>test</div>} />
             </Route>
           </Route>

@@ -1,8 +1,12 @@
+import { Button, useTheme } from "@mui/material";
 import React, { useMemo } from "react";
+import Swal, { SweetAlertResult } from "sweetalert2";
+import { UseMutationResult, UseQueryResult } from "react-query";
+import dayjs, { Dayjs } from "dayjs";
 import i18n, { changeLanguage } from "i18next";
+import { lotteryDate, transaction } from "../../utils/type";
 
 import { Add } from "@mui/icons-material";
-import { Button } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers";
 import { MRT_ColumnDef } from "material-react-table"; // If using TypeScript (optional, but recommended)
 import { MRT_Localization_FR } from "material-react-table/locales/fr";
@@ -10,47 +14,63 @@ import { MaterialReactTable } from "material-react-table";
 import { useTranslation } from "react-i18next";
 
 //If using TypeScript, define the shape of your data (optional, but recommended)
-interface Data {
-  no: number;
-  transaction_id: string;
-  bill_id: string;
-  buyer_number: string;
-  buyer_name: string;
-  lottery_date: string;
-  date: string;
-  time : string;
-  pay_by: string;
-  amount: number;
-  status: string;
-}
 
 //mock data - strongly typed if you are using TypeScript (optional, but recommended)
 
-export default function App({ data }: { data: Data[] }) {
+export default function App({
+  transactionQuery,
+  lotterDateQuery,
+  lotteryDate,
+  setLotteryDate,
+  calculateWin,
+  transferMutation,
+}: {
+  transactionQuery: UseQueryResult<any>;
+  setLotteryDate: React.Dispatch<React.SetStateAction<any>>;
+  lotterDateQuery: UseQueryResult<any>;
+  lotteryDate: Date | undefined;
+  calculateWin: () => void;
+  transferMutation: UseMutationResult<any, unknown, any, void>;
+}) {
   const { t } = useTranslation();
+  const theme = useTheme();
   //column definitions - strongly typed if you are using TypeScript (optional, but recommended)
-  const columns = useMemo<MRT_ColumnDef<Data>[]>(
+  const columns = useMemo<MRT_ColumnDef<any>[]>(
     () => [
+      // {
+      //   // accessorFn: (originalRow) => originalRow[`${lotteryDate}_invoice`].$id, //alternate way
+
+      //   id: "no", //id required if you use accessorFn instead of accessorKey
+      //   header: "No.",
+      //   Header: (
+      //     <div style={{ fontFamily: "BoonBaanRegular", textAlign: "center" }}>
+      //       {t("transaction.no")}
+      //     </div>
+      //   ), //optional custom markup
+      // },
       {
-        accessorFn: (originalRow) => originalRow.no, //alternate way
-        id: "no", //id required if you use accessorFn instead of accessorKey
-        header: "No.",
-        Header: (
-          <i style={{ fontFamily: "BoonBaanRegular" }}>{t("transaction.no")}</i>
-        ), //optional custom markup
-      },
-      {
-        accessorFn: (originalRow) => originalRow.transaction_id, //alternate way
         id: "transaction_id", //id required if you use accessorFn instead of accessorKey
         header: "transaction_id",
         Header: (
           <i style={{ fontFamily: "BoonBaanRegular" }}>
             {t("transaction.transaction_id")}
           </i>
-        ), //optional custom markup
+        ),
+        Cell: ({ cell }) => {
+          const data = cell.row.original;
+          const invoice =
+            data[`${dayjs(lotteryDate).format("YYYYMMDD")}_invoice`];
+          return (
+            <div className="text-center">
+              <div className="w-fit mx-auto   hover:opacity-80 cursor-pointer">
+                {invoice?.$id ?? ""}
+              </div>
+            </div>
+          );
+        },
       },
       {
-        accessorFn: (originalRow) => originalRow.buyer_number, //alternate way
+        accessorFn: (originalRow) => originalRow.lottery, //alternate way
         id: "buyer_number", //id required if you use accessorFn instead of accessorKey
         header: "buyer_number",
         Header: (
@@ -60,34 +80,42 @@ export default function App({ data }: { data: Data[] }) {
         ), //optional custom markup
       },
       {
-        accessorFn: (originalRow) => originalRow.buyer_name, //alternate way
-        id: "buyer_name", //id required if you use accessorFn instead of accessorKey
-        header: "buyer_name",
+        accessorFn: (originalRow) => originalRow.users?.username, //alternate way
+        id: "username", //id required if you use accessorFn instead of accessorKey
+        header: "username",
         Header: (
-          <i style={{ fontFamily: "BoonBaanRegular" }}>
-            {t("transaction.buyer_name")}
-          </i>
+          <i style={{ fontFamily: "BoonBaanRegular" }}>{t("username")}</i>
         ), //optional custom markup
       },
+      // {
+      //   accessorFn: (originalRow) => originalRow.lottery_date, //alternate way
+      //   id: "lottery_date", //id required if you use accessorFn instead of accessorKey
+      //   header: "lottery_date",
+      //   Header: (
+      //     <i style={{ fontFamily: "BoonBaanRegular" }}>
+      //       {t("transaction.lottery_date")}
+      //     </i>
+      //   ), //optional custom markup
+      // },
       {
-        accessorFn: (originalRow) => originalRow.lottery_date, //alternate way
-        id: "lottery_date", //id required if you use accessorFn instead of accessorKey
-        header: "lottery_date",
-        Header: (
-          <i style={{ fontFamily: "BoonBaanRegular" }}>
-            {t("transaction.lottery_date")}
-          </i>
-        ), //optional custom markup
-      },
-      {
-        accessorFn: (originalRow) => originalRow.date, //alternate way
         id: "date", //id required if you use accessorFn instead of accessorKey
         header: "date",
         Header: (
           <i style={{ fontFamily: "BoonBaanRegular" }}>
             {t("transaction.date")}
           </i>
-        ), //optional custom markup
+        ),
+        Cell: ({ cell }) => {
+          const data = cell.row.original;
+
+          return (
+            <div className="text-center">
+              <div className="w-fit mx-auto   hover:opacity-80 cursor-pointer">
+                {dayjs(data?.$createdAt).format("DD-MM-YYYY") ?? ""}
+              </div>
+            </div>
+          );
+        },
       },
       {
         accessorFn: (originalRow) => originalRow.time, //alternate way
@@ -97,7 +125,18 @@ export default function App({ data }: { data: Data[] }) {
           <i style={{ fontFamily: "BoonBaanRegular" }}>
             {t("transaction.time")}
           </i>
-        ), //optional custom markup
+        ),
+        Cell: ({ cell }) => {
+          const data = cell.row.original;
+
+          return (
+            <div className="text-center">
+              <div className="w-fit mx-auto   hover:opacity-80 cursor-pointer">
+                {dayjs(data?.$createdAt).format("HH:mm:ss") ?? ""}
+              </div>
+            </div>
+          );
+        },
       },
       {
         accessorFn: (originalRow) => originalRow.bill_id, //alternate way
@@ -107,10 +146,21 @@ export default function App({ data }: { data: Data[] }) {
           <i style={{ fontFamily: "BoonBaanRegular" }}>
             {t("transaction.bill_id")}
           </i>
-        ), //optional custom markup
+        ),
+        Cell: ({ cell }) => {
+          const data = cell.row.original;
+
+          return (
+            <div className="text-center">
+              <div className="w-fit mx-auto   hover:opacity-80 cursor-pointer">
+                {data.$id ?? ""}
+              </div>
+            </div>
+          );
+        },
       },
       {
-        accessorFn: (originalRow) => originalRow.pay_by, //alternate way
+        accessorFn: (originalRow) => originalRow.bankName, //alternate way
         id: "pay_by", //id required if you use accessorFn instead of accessorKey
         header: "pay_by",
         Header: (
@@ -137,7 +187,43 @@ export default function App({ data }: { data: Data[] }) {
           <i style={{ fontFamily: "BoonBaanRegular" }}>
             {t("transaction.status")}
           </i>
-        ), //optional custom markup
+        ),
+        Cell: ({ cell }) => {
+          const data = cell.row.original;
+          return (
+            <div className="text-center">
+              <div className="w-fit mx-auto flex items-center gap-2  hover:opacity-80 cursor-pointer">
+                {data.status === null ? "-" : data.status}
+                {/* TODO: Status Win */}
+                {data.status === "win" && (
+                  <Button
+                    size="small"
+                    sx={{ color: "white", fontFamily: "BoonBaanRegular" }}
+                    variant="contained"
+                    onClick={async () => {
+                      Swal.fire({
+                        title: `${t("updateConfirm")}`,
+                        icon: "info",
+                        showCancelButton: true,
+                        confirmButtonColor: theme.palette.primary.main,
+                        cancelButtonColor: "#FF5555",
+                        confirmButtonText: `${t("confirm")}`,
+                        cancelButtonText: `${t("cancle")}`,
+                        reverseButtons: true,
+                      }).then(async (result: SweetAlertResult) => {
+                        if (result.isConfirmed) {
+                          await transferMutation.mutateAsync({ data });
+                        }
+                      });
+                    }}
+                  >
+                    {t("transaction.transfer")}
+                  </Button>
+                )}
+              </div>
+            </div>
+          );
+        },
       },
       // {
       //   // accessorFn: (originalRow) => originalRow.isSell, //alternate way
@@ -167,14 +253,26 @@ export default function App({ data }: { data: Data[] }) {
       //   }, //render Date as a string
       // },
     ],
-    [i18n.language]
+    [i18n.language, lotteryDate]
   );
+  const checkActiveDay = (date: Dayjs) => {
+    const checkDay = lotterDateQuery.data?.documents?.some((d: lotteryDate) =>
+      dayjs(d.date).isSame(date.startOf("day"))
+    );
 
+    return !checkDay;
+  };
+
+  const test =
+    transactionQuery.data?.documents !== undefined
+      ? transactionQuery.data.documents
+      : [];
+      console.log('',test)
   return (
     <div className="mt-2">
       <MaterialReactTable
         columns={columns}
-        data={data}
+        data={test}
         //   enableRowSelection //enable some features
         enableHiding={false}
         enableGlobalFilter={false} //turn off a feature
@@ -182,7 +280,7 @@ export default function App({ data }: { data: Data[] }) {
         enableColumnFilters={false}
         //   enablePagination={false}
         enableSorting={false}
-        enableBottomToolbar={false}
+        // enableBottomToolbar={false}
         enableExpandAll={false}
         enableFullScreenToggle={false}
         enableDensityToggle={false}
@@ -195,6 +293,9 @@ export default function App({ data }: { data: Data[] }) {
             borderRadius: "8px",
             border: "1px solid #e0e0e0",
           },
+        }}
+        state={{
+          isLoading: transferMutation.isLoading,
         }}
         muiTableProps={{
           sx: {
@@ -233,24 +334,6 @@ export default function App({ data }: { data: Data[] }) {
           },
         }}
         renderTopToolbarCustomActions={({ table }) => {
-          const handleDeactivate = () => {
-            table.getSelectedRowModel().flatRows.map((row) => {
-              alert("deactivating " + row.getValue("name"));
-            });
-          };
-
-          const handleActivate = () => {
-            table.getSelectedRowModel().flatRows.map((row) => {
-              alert("activating " + row.getValue("name"));
-            });
-          };
-
-          const handleContact = () => {
-            table.getSelectedRowModel().flatRows.map((row) => {
-              alert("contact " + row.getValue("name"));
-            });
-          };
-
           return (
             <div className="w-full flex justify-between mx-2">
               <div className="flex w-4/5">
@@ -269,12 +352,12 @@ export default function App({ data }: { data: Data[] }) {
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
                     >
-                      <g clip-path="url(#clip0_344_1823)">
+                      <g clipPath="url(#clip0_344_1823)">
                         <path
                           d="M18.3334 18.3333L16.6667 16.6666M9.58341 17.5C10.623 17.5 11.6525 17.2952 12.613 16.8973C13.5735 16.4995 14.4462 15.9164 15.1813 15.1812C15.9165 14.4461 16.4996 13.5734 16.8975 12.6129C17.2953 11.6524 17.5001 10.6229 17.5001 9.58329C17.5001 8.54366 17.2953 7.51421 16.8975 6.55372C16.4996 5.59322 15.9165 4.72049 15.1813 3.98536C14.4462 3.25023 13.5735 2.6671 12.613 2.26925C11.6525 1.8714 10.623 1.66663 9.58341 1.66663C7.48378 1.66663 5.47015 2.5007 3.98549 3.98536C2.50082 5.47003 1.66675 7.48366 1.66675 9.58329C1.66675 11.6829 2.50082 13.6966 3.98549 15.1812C5.47015 16.6659 7.48378 17.5 9.58341 17.5Z"
                           stroke="#B9BCC7"
-                          stroke-width="1.5"
-                          stroke-linecap="round"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
                           stroke-linejoin="round"
                         />
                       </g>
@@ -288,14 +371,20 @@ export default function App({ data }: { data: Data[] }) {
                 </div>
 
                 <DatePicker
+                  value={dayjs(lotteryDate) ?? undefined}
+                  shouldDisableDate={checkActiveDay}
                   format="DD/MM/YYYY"
-                  // value={filterStore.startDate || null}
-                  // label="Start date"
+                  // minDate={watch("endDate") && dayjs(watch("endDate"))}
+                  // value={dayjs(watch("date"), "YYYYMMDD") ?? undefined}
+                  // label={t("lotto_history.lottery_date")}
                   slots={{
                     textField: CustomInput,
                   }}
                   onChange={(e: any) => {
                     if (e !== null) {
+                      console.log("", e);
+                      setLotteryDate(e.toDate());
+                      // setValue("date", dayjs(e).toDate());
                       // filterStore.handleChangeStartDate(e);
                     }
                   }}
@@ -316,6 +405,7 @@ export default function App({ data }: { data: Data[] }) {
                 sx={{ color: "white", fontFamily: "BoonBaanRegular" }}
                 variant="contained"
                 // startIcon={<Add />}
+                onClick={calculateWin}
               >
                 {t("transaction.calculate")}
               </Button>

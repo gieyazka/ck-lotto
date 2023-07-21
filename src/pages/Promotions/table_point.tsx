@@ -1,52 +1,63 @@
 import React, { useMemo } from "react";
+import { UseMutationResult, UseQueryResult } from "react-query";
 import i18n, { changeLanguage } from "i18next";
-import {ReactComponent as EditIcon} from "../../assets/icons/edit.svg"
-import {ReactComponent as DeleteIcon} from "../../assets/icons/delete.svg"
+
 import { Add } from "@mui/icons-material";
 import { Button } from "@mui/material";
-import { DatePicker } from "@mui/x-date-pickers";
-import DeletedIcon from '@mui/icons-material/Delete';
-import IconButton from "@mui/material/IconButton";
 import Chip from "@mui/material/Chip";
+import { DatePicker } from "@mui/x-date-pickers";
+import { ReactComponent as DeleteIcon } from "../../assets/icons/delete.svg";
+import DeletedIcon from "@mui/icons-material/Delete";
+import { ReactComponent as EditIcon } from "../../assets/icons/edit.svg";
+import IconButton from "@mui/material/IconButton";
 import { MRT_ColumnDef } from "material-react-table"; // If using TypeScript (optional, but recommended)
 import { MRT_Localization_FR } from "material-react-table/locales/fr";
 import { MaterialReactTable } from "material-react-table";
-import { useTranslation } from "react-i18next";
-import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import dayjs from "dayjs";
+import { promotionData } from "../../utils/type";
 import { useTheme } from "@mui/material/styles";
+import { useTranslation } from "react-i18next";
 
 //If using TypeScript, define the shape of your data (optional, but recommended)
-interface Data {
-  no: string;
-  promotion_name: string;
-  bonus: string;
-  start_date: string;
-  expire_date: string;
-  status: string;
-  
-}
 
 //mock data - strongly typed if you are using TypeScript (optional, but recommended)
 
-export default function App({ data }: { data: Data[] }) {
+export default function App({
+  onOpenDialog,
+  onChangeSearch,
+  dataQuery,
+  paginationState,
+  setPaginationState,
+  onDelete,
+}: // onEditUser
+{
+  onOpenDialog: (data: any) => void;
+  onDelete: (docId: string) => void;
+  onChangeSearch: (text: string) => void;
+  dataQuery: UseQueryResult<any>;
+  paginationState: { pageIndex: number; pageSize: number };
+  setPaginationState: (props: any) => void;
+  // onEditUser: (data: userData) => void;
+}) {
   const theme = useTheme();
 
   const { t } = useTranslation();
   //column definitions - strongly typed if you are using TypeScript (optional, but recommended)
-  const columns = useMemo<MRT_ColumnDef<Data>[]>(
+  const columns = useMemo<MRT_ColumnDef<promotionData>[]>(
     () => [
+      // {
+      //   accessorFn: (originalRow) => originalRow.no, //alternate way
+      //   id: "no", //id required if you use accessorFn instead of accessorKey
+      //   header: "no",
+      //   Header: (
+      //     <i style={{ fontFamily: "BoonBaanRegular" }}>
+      //       {t("promotions.no")}
+      //     </i>
+      //   ), //optional custom markup
+      // },
       {
-        accessorFn: (originalRow) => originalRow.no, //alternate way
-        id: "no", //id required if you use accessorFn instead of accessorKey
-        header: "no",
-        Header: (
-          <i style={{ fontFamily: "BoonBaanRegular" }}>
-            {t("promotions.no")}
-          </i>
-        ), //optional custom markup
-      },
-      {
-        accessorFn: (originalRow) => originalRow.promotion_name, //alternate way
+        accessorFn: (originalRow) => originalRow.name, //alternate way
         id: "promotion_name", //id required if you use accessorFn instead of accessorKey
         header: "promotion_name",
         Header: (
@@ -56,17 +67,18 @@ export default function App({ data }: { data: Data[] }) {
         ), //optional custom markup
       },
       {
-        accessorFn: (originalRow) => originalRow.bonus, //alternate way
-        id: "bonus", //id required if you use accessorFn instead of accessorKey
-        header: "bonus",
+        accessorFn: (originalRow) => originalRow.point, //alternate way
+        id: "point", //id required if you use accessorFn instead of accessorKey
+        header: "point",
         Header: (
           <i style={{ fontFamily: "BoonBaanRegular" }}>
-            {t("promotions.bonus")}
+            {t("promotions.point")}
           </i>
         ), //optional custom markup
       },
       {
-        accessorFn: (originalRow) => originalRow.start_date, //alternate way
+        accessorFn: (originalRow) =>
+          dayjs(originalRow.startDate).format("DD-MM-YYYY"), //alternate way
         id: "start_date", //id required if you use accessorFn instead of accessorKey
         header: "start_date",
         Header: (
@@ -76,7 +88,8 @@ export default function App({ data }: { data: Data[] }) {
         ), //optional custom markup
       },
       {
-        accessorFn: (originalRow) => originalRow.expire_date, //alternate way
+        accessorFn: (originalRow) =>
+          dayjs(originalRow.expireDate).format("DD-MM-YYYY"), //alternate way
         id: "expire_date", //id required if you use accessorFn instead of accessorKey
         header: "expire_date",
         Header: (
@@ -87,9 +100,9 @@ export default function App({ data }: { data: Data[] }) {
       },
 
       {
-        accessorFn: (originalRow) => null, //alternate way
-        id: "action", //id required if you use accessorFn instead of accessorKey
-        header: "action",
+        accessorFn: (originalRow) => null,
+        id: "status",
+        header: "status",
         Header: (
           <i style={{ fontFamily: "BoonBaanRegular" }}>
             {t("promotions.status")}
@@ -97,7 +110,16 @@ export default function App({ data }: { data: Data[] }) {
         ), //optional custom markup
         Cell: ({ cell }) => {
           const data = cell.row.original;
-
+          let color = "#FFE600";
+          let checkStatus = "On progress";
+          if (dayjs().isAfter(dayjs(data.expireDate).add(1, "day"))) {
+            checkStatus = "Done";
+            color = "#94D18A";
+          }
+          if (dayjs().isBefore(dayjs(data.startDate))) {
+            checkStatus = "Incoming";
+            color = theme.palette.primary.main;
+          }
           return (
             <div className="text-center">
               <div
@@ -108,54 +130,64 @@ export default function App({ data }: { data: Data[] }) {
                 //   // FF5555 : red
                 // }}
               >
-                 <Chip sx={{backgroundColor : '#40CFFF',color : 'white'}} label={data.status}  />
+                <Chip
+                  sx={{ backgroundColor: color, color: "white" }}
+                  label={checkStatus}
+                />
                 {/* <IconButton size="small" aria-label="delete" sx={{color : '#40CFFF'}}>
                   <VisibilityIcon />
                 </IconButton> */}
               </div>
             </div>
           );
-        }, //render Date as a string
+        },
       },
       {
         accessorFn: (originalRow) => null, //alternate way
-        id: "action", //id required if you use accessorFn instead of accessorKey
-        header: "action",
+        id: "edit", //id required if you use accessorFn instead of accessorKey
+        header: "edit",
         Header: (
           <i style={{ fontFamily: "BoonBaanRegular" }}>
             {t("promotions.edit")}
           </i>
-        ), 
+        ),
         Cell: ({ cell }) => {
           const data = cell.row.original;
-
+          const checkDisable = dayjs().isAfter(
+            dayjs(data.expireDate).add(1, "day")
+          );
           return (
             <div className="text-center">
-              <div
-                className="w-fit mx-auto   hover:opacity-80 cursor-pointer"
-                // <div className="w-fit mx-auto rounded-md border-4 border-indigo-500 text-white"
-                // style={{
-                //   backgroundColor: !isSell ? "#299914" : "#FF5555",
-                //   // FF5555 : red
-                // }}
-              >
-                <IconButton size="small" aria-label="delete" sx={{color : '#FF0000'}}>
-                  <EditIcon style={{fill :  theme.palette.primary.main}}/>
+              <div className="w-fit mx-auto   hover:opacity-80 cursor-pointer">
+                <IconButton
+                  size="small"
+                  aria-label="delete"
+                  sx={{ color: "#FF0000" }}
+                  disabled={checkDisable}
+                  onClick={() => {
+                    onOpenDialog(data);
+                  }}
+                >
+                  <EditIcon
+                    style={{
+                      fill: checkDisable ? "" : theme.palette.primary.main,
+                    }}
+                  />
                 </IconButton>
               </div>
             </div>
           );
-        }, //render Date as a string
+        },
       },
       {
         accessorFn: (originalRow) => null, //alternate way
-        id: "action", //id required if you use accessorFn instead of accessorKey
-        header: "action",
+        id: "delete", //id required if you use accessorFn instead of accessorKey
+        header: "delete",
         Header: (
           <i style={{ fontFamily: "BoonBaanRegular" }}>
             {t("promotions.delete")}
           </i>
-        ), 
+        ),
         Cell: ({ cell }) => {
           const data = cell.row.original;
 
@@ -169,36 +201,59 @@ export default function App({ data }: { data: Data[] }) {
                 //   // FF5555 : red
                 // }}
               >
-                <IconButton size="small" aria-label="delete" sx={{color : '#FF0000'}}>
-                  <DeleteIcon style={{fill : "red"}} />
+                <IconButton
+                  size="small"
+                  aria-label="delete"
+                  sx={{ color: "#FF0000" }}
+                  onClick={async () => {
+                    if (data.$id !== undefined) {
+                      await onDelete(data.$id);
+                    }
+                  }}
+                >
+                  <DeleteIcon style={{ fill: "red" }} />
                 </IconButton>
               </div>
             </div>
           );
         }, //render Date as a string
       },
-   
     ],
     [i18n.language]
   );
-
   return (
     <div className="mt-2">
       <MaterialReactTable
         columns={columns}
-        data={data}
+        data={
+          dataQuery.data?.documents !== undefined
+            ? dataQuery.data.documents
+            : []
+        }
         //   enableRowSelection //enable some features
         enableHiding={false}
-        enableGlobalFilter={false} //turn off a feature
+        // enableGlobalFilter={false}
         enableColumnActions={false}
         enableColumnFilters={false}
         //   enablePagination={false}
         enableSorting={false}
-        enableBottomToolbar={false}
+        // enableBottomToolbar={false}
         enableExpandAll={false}
         enableFullScreenToggle={false}
         enableDensityToggle={false}
-        enableTopToolbar={false}
+        // enableTopToolbar={false}
+
+        manualPagination
+        rowCount={dataQuery.data?.total ?? 0}
+        onPaginationChange={setPaginationState}
+        state={{
+          isLoading: dataQuery.isFetching,
+
+          pagination: {
+            pageIndex: paginationState.pageIndex,
+            pageSize: paginationState.pageSize,
+          },
+        }}
         //   muiTableBodyRowProps={{ hover: false }}
         muiTablePaperProps={{
           elevation: 0, //change the mui box shadow
@@ -281,12 +336,12 @@ export default function App({ data }: { data: Data[] }) {
         //               fill="none"
         //               xmlns="http://www.w3.org/2000/svg"
         //             >
-        //               <g clip-path="url(#clip0_344_1823)">
+        //               <g clipPath="url(#clip0_344_1823)">
         //                 <path
         //                   d="M18.3334 18.3333L16.6667 16.6666M9.58341 17.5C10.623 17.5 11.6525 17.2952 12.613 16.8973C13.5735 16.4995 14.4462 15.9164 15.1813 15.1812C15.9165 14.4461 16.4996 13.5734 16.8975 12.6129C17.2953 11.6524 17.5001 10.6229 17.5001 9.58329C17.5001 8.54366 17.2953 7.51421 16.8975 6.55372C16.4996 5.59322 15.9165 4.72049 15.1813 3.98536C14.4462 3.25023 13.5735 2.6671 12.613 2.26925C11.6525 1.8714 10.623 1.66663 9.58341 1.66663C7.48378 1.66663 5.47015 2.5007 3.98549 3.98536C2.50082 5.47003 1.66675 7.48366 1.66675 9.58329C1.66675 11.6829 2.50082 13.6966 3.98549 15.1812C5.47015 16.6659 7.48378 17.5 9.58341 17.5Z"
         //                   stroke="#B9BCC7"
-        //                   stroke-width="1.5"
-        //                   stroke-linecap="round"
+        //                   strokeWidth="1.5"
+        //                   strokeLinecap="round"
         //                   stroke-linejoin="round"
         //                 />
         //               </g>

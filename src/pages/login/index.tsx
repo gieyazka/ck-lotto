@@ -59,6 +59,7 @@ const Login = () => {
     if (remember) {
       setValue("username", remember.username);
       setValue("password", remember.password);
+      setValue("remember", true);
     }
   }, []);
 
@@ -87,32 +88,50 @@ const Login = () => {
         type: "error",
         title: "User not founded",
       });
+      loadingStore.setLoad(false);
       return;
     }
     const email = user[0].email;
+    if (user[0].isDelete) {
+      callSweetAlert({
+        type: "error",
+        title: "User  Delete",
+      });
+      loadingStore.setLoad(false);
+      return;
+    }
+    if (user[0].status === "block") {
+      callSweetAlert({
+        type: "error",
+        title: "User Block",
+      });
+      loadingStore.setLoad(false);
+      return;
+    }
     try {
       const resLogin = await appWriteAuth({ email, password: data.password });
       if (data.remember) {
         localStorage.setItem(
           "userRemember",
-          JSON.stringify({ username: data.username, password: data.password })
+          // JSON.stringify({ username: data.username, password: data.password })
+          JSON.stringify({ username: data.username })
         );
       } else {
         localStorage.removeItem("userRemember");
       }
+      console.log('resLogin',resLogin)
       // @ts-ignore
 
-      localStorage.setItem("isLogin", true);
-      const userLogin = { ...resLogin, ...user[0] };
-      sessionStorage.setItem("User", JSON.stringify(userLogin));
-      await addUserLog({
-        type: "login",
-        users: userLogin.$id,
-        timestamp: new Date(),
-        collection : "users",
-      });
-     
-   
+      // localStorage.setItem("isLogin", true);
+      // const userLogin = { ...resLogin, ...user[0] };
+      // sessionStorage.setItem("User", JSON.stringify(userLogin));
+      // await addUserLog({
+      //   type: "login",
+      //   users: userLogin.$id,
+      //   timestamp: new Date(),
+      //   collection: "users",
+      // });
+
       // localStorage.setItem("User", JSON.stringify(resLogin));
       // localStorage.setItem("User", JSON.stringify({}));
       navigate(`/`);

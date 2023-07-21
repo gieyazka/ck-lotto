@@ -116,7 +116,7 @@ const Ads_Page = () => {
       showCancelButton: true,
       confirmButtonColor: theme.palette.primary.main,
       cancelButtonColor: "#FF5555",
-      confirmButtonText: `${t("comfirm")}`,
+      confirmButtonText: `${t("confirm")}`,
       cancelButtonText: `${t("cancle")}`,
       reverseButtons: true,
     }).then(async (result) => {

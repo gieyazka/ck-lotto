@@ -224,7 +224,7 @@ export default function Layout() {
                             height: "24px",
                             marginRight: "5px",
                           }}
-                          src={`/images/flags/${lang}.svg`}
+                          src={`/images/flags/${lang === "lo" ? "la" : lang}.svg`}
                         />
                         <Typography>
                           {lang === "en"
