@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import {
+  Autocomplete,
   Avatar,
   Box,
   Input,
@@ -61,9 +62,16 @@ export default function RenderDialog({
     if (dialogState.open) {
       setValue("name", dialogState.data?.name);
       setValue("bonus", dialogState.data?.bonus);
-      setValue("groups", dialogState.data?.groups);
+      setValue(
+        "groups",
+        _.map(dialogState.data?.groups, (item) => ({
+          label: item.name,
+          value: item,
+        }))
+      );
       setValue("startDate", dayjs(dialogState.data.startDate));
       setValue("expireDate", dayjs(dialogState.data.expireDate));
+      setValue("type", dialogState.data.type ?? "");
     }
   }, [dialogState.open]);
   const handleChange = (event: SelectChangeEvent<any>) => {
@@ -80,6 +88,19 @@ export default function RenderDialog({
       setValue("groups", uniqueArray);
     }
   };
+  const transformedArray = _.map(groupQuery.data?.documents, (item) => ({
+    label: item.name,
+    value: item,
+  }));
+  const handleChangeAutoComplete = (
+    newValue: { label: string; value: any }[]
+  ) => {
+    const uniqueArray = _.uniqBy(
+      newValue as any,
+      (obj : any) => obj.value["$id"]
+    );
+    setValue("groups", uniqueArray);
+  };
   return (
     <div>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -95,7 +116,7 @@ export default function RenderDialog({
           <div className="flex mx-4 my-2 gap-4 items-center ">
             <div className="flex flex-col gap-2">
               <div className="flex gap-2 w-full ">
-                <div className="flex flex-end items-center basis-1/2 ">
+                <div className="flex flex-end items-center flex-1 ">
                   <CardIcon className="mr-2" />
                   <Controller
                     control={control}
@@ -116,38 +137,80 @@ export default function RenderDialog({
                     )}
                     name="name"
                   />
-
-                  {errors.firstName && <p>This is required.</p>}
-                </div>
-
-                <div className="flex flex-end items-center flex-1 ">
-                  <Controller
-                    control={control}
-                    rules={{
-                      required: true,
-                    }}
-                    render={({ field: { onChange, onBlur, value } }) => (
-                      <TextField
-                        fullWidth
-                        id="input-with-sx"
-                        label={t("promotions.bonus")}
-                        variant="standard"
-                        inputProps={{
-                          style: { fontFamily: "BoonBaanRegular" },
-                        }}
-                        onBlur={onBlur}
-                        onChange={onChange}
-                        value={value}
-                      />
-                    )}
-                    name="bonus"
-                  />
                 </div>
               </div>
 
               <div className="flex flex-1 gap-2">
-                <div className="flex flex-end  flex-1 justify-center items-center ml-2 pl-6 ">
+                <div className="flex flex-end  flex-1 gap-4 justify-center items-center ml-2 pl-6 ">
                   <Select
+                    displayEmpty
+                    className="font-[BoonBaanRegular] mt-2 w-full"
+                    value={watch("type") ?? ""}
+                    input={<Input />}
+                    onChange={(e) => {
+                      setValue("type", e.target.value);
+                    }}
+                  >
+                    <MenuItem value={""}>Select Type</MenuItem>{" "}
+                    <MenuItem value={"fixed"}>fixed</MenuItem>{" "}
+                    <MenuItem value={"percent"}>percent</MenuItem>
+                  </Select>
+                  <div className="flex flex-end items-center basis-1/2 ">
+                    <Controller
+                      control={control}
+                      rules={{
+                        required: true,
+                      }}
+                      render={({ field: { onChange, onBlur, value } }) => (
+                        <TextField
+                          fullWidth
+                          id="input-with-sx"
+                          label={t("promotions.bonus")}
+                          variant="standard"
+                          inputProps={{
+                            style: { fontFamily: "BoonBaanRegular" },
+                          }}
+                          onBlur={onBlur}
+                          onChange={onChange}
+                          value={value}
+                        />
+                      )}
+                      name="bonus"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-1 gap-2">
+                <div className="flex   flex-1  items-center ml-2 pl-6 ">
+                  <Autocomplete
+                    sx={{
+                      width: "100%",
+                    }}
+                    multiple={true}
+                    value={watch("groups") ?? []}
+                    onChange={(event: any, newValue: any) => {
+                      handleChangeAutoComplete(newValue);
+                    }}
+                    options={transformedArray}
+                    renderInput={(params) => {
+                      return (
+                        <TextField
+                          variant="standard"
+                          {...params}
+                          placeholder="Groups"
+                          sx={{
+                            ["& .MuiInputBase-root"]: {
+                              padding: 0,
+                              // background: "#F9FAFB",
+                              minHeight: 54,
+                            },
+                          }}
+                          className="  text-sm flex-1 w-full  font-semibold      rounded-lg  block    "
+                        />
+                      );
+                    }}
+                  />
+                  {/* <Select
                     multiple
                     displayEmpty
                     className="font-[BoonBaanRegular] mt-2 w-full"
@@ -171,7 +234,7 @@ export default function RenderDialog({
                         {group.name}
                       </MenuItem>
                     ))}
-                  </Select>
+                  </Select> */}
                 </div>
               </div>
 

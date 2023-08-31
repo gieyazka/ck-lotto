@@ -356,7 +356,7 @@ export default function App({
         //                   stroke="#B9BCC7"
         //                   strokeWidth="1.5"
         //                   strokeLinecap="round"
-        //                   stroke-linejoin="round"
+        //                   strokeLinejoin="round"
         //                 />
         //               </g>
         //               <defs>

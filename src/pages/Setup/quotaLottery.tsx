@@ -10,14 +10,24 @@ import {
   addUserLog,
   deleteUser,
   getCustomer,
+  getLotteryDateTwoYear,
+  getLottery_Quota,
   getQuota,
   getUserSession,
   getWinPrice,
+  upDateLottery_Quota,
   upDateQuota,
   upDateWinPrice,
 } from "../../utils/service";
+import dayjs, { Dayjs } from "dayjs";
 import i18n, { changeLanguage } from "i18next";
-import { loadingStore, quota, userData, winPrice } from "../../utils/type";
+import {
+  loadingStore,
+  lotteryDate,
+  quota,
+  userData,
+  winPrice,
+} from "../../utils/type";
 
 import { Add } from "@mui/icons-material";
 import Chip from "@mui/material/Chip";
@@ -33,7 +43,6 @@ import Swal from "sweetalert2";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import _ from "lodash";
 import { callToast } from "../../utils/common";
-import dayjs from "dayjs";
 import { useLoading } from "../../store";
 import { useTheme } from "@mui/material/styles";
 import { useTranslation } from "react-i18next";
@@ -43,7 +52,38 @@ import { useTranslation } from "react-i18next";
 //mock data - strongly typed if you are using TypeScript (optional, but recommended)
 
 export default function App() {
+  const [lotteryDate, setLotteryDate] = React.useState<Date>();
   const theme = useTheme();
+
+  const checkActiveDay = (date: Dayjs) => {
+    const checkDay = lotterDateQuery.data?.documents?.some((d: lotteryDate) =>
+      dayjs(d.date).isSame(date.startOf("day"))
+    );
+
+    return !checkDay;
+  };
+  const lotterDateQuery = useQuery(
+    ["lotterDate"],
+    () => getLotteryDateTwoYear(),
+    {
+      refetchOnMount: "always",
+      keepPreviousData: true,
+      refetchInterval: false,
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  React.useEffect(() => {
+    if (lotterDateQuery.isFetchedAfterMount) {
+      const filterDate = lotterDateQuery.data.documents.filter(
+        (d: lotteryDate) => dayjs(d.date).isAfter(dayjs())
+      );
+      const nextDate = _.orderBy(filterDate, ["date"], ["asc"])[0];
+      if (lotteryDate === undefined) {
+        setLotteryDate(dayjs(nextDate.date).toDate());
+      }
+    }
+  }, [lotterDateQuery.isFetchedAfterMount]);
   const user = getUserSession();
   const { t } = useTranslation();
   const loadingStore = useLoading();
@@ -63,10 +103,10 @@ export default function App() {
       if (result.isConfirmed) {
         const newUserArr = _.cloneDeep(data.users) ?? [];
         const newUpdateDate = _.cloneDeep(data.updateDate) ?? [];
-        if (newUpdateDate.length >= 10) {
+        if (newUpdateDate.length >= 5) {
           newUpdateDate.splice(0, 1);
         }
-        if (newUserArr.length >= 10) {
+        if (newUserArr.length >= 5) {
           newUserArr.splice(0, 1);
         }
         const { email, $id, username, firstname, lastname, tel, role, type } =
@@ -84,21 +124,33 @@ export default function App() {
           })
         );
         newUpdateDate?.push(new Date());
-        data.users = newUserArr;
-        data.updateDate = newUpdateDate;
-        console.log("data", data);
-        await updateQuotaMutation.mutateAsync({ data });
+
+        const newQuota = {
+          digit: data.digit,
+          quota: data.quota,
+          users: newUserArr,
+          updateDate: newUpdateDate,
+        };
+        const masterData = JSON.parse(quotaQuery.data?.documents[0].quota);
+        const getIndex = _.findIndex(
+          masterData,
+          (d: any) => d.digit === data.digit
+        );
+        masterData[getIndex] = newQuota;
+        const updateData = {
+          quota: JSON.stringify(masterData),
+          $id: quotaQuery.data?.documents[0].$id,
+        };
+
+        await updateQuotaMutation.mutateAsync({ data: updateData });
         // onCloseDialog();
       }
     });
   };
-  const [paginationState, setPaginationState] = React.useState({
-    pageIndex: 0,
-    pageSize: 25,
-  });
+
   const quotaQuery = useQuery(
-    ["quota", paginationState.pageIndex, paginationState.pageSize],
-    () => getQuota(paginationState),
+    ["lotto_quota", lotteryDate],
+    () => getLottery_Quota({ date: lotteryDate }),
     {
       refetchOnMount: "always",
       keepPreviousData: true,
@@ -108,8 +160,8 @@ export default function App() {
   );
 
   const updateQuotaMutation = useMutation(
-    (props: { data: quota }) => {
-      return upDateQuota(props.data);
+    (props: { data: any }) => {
+      return upDateLottery_Quota(props.data);
     },
     {
       onMutate: () => {
@@ -151,23 +203,31 @@ export default function App() {
 
   React.useEffect(() => {
     if (!quotaQuery.isLoading) {
-      if (quotaQuery.data?.documents?.length !== 6) {
-        const defaultArr = ["1", "2", "3", "4", "5", "6"];
-        const result: quota[] = defaultArr.map((d) => {
-          const findDigit: quota = quotaQuery.data.documents.find(
-            (b: quota) => b.digit === d
-          );
-          return d === findDigit?.digit ? findDigit : ({ digit: d } as quota);
-        });
-        setState(result);
-      } else {
-        setState(quotaQuery.data.documents ?? []);
+      if (quotaQuery.data?.documents[0]) {
+        const quota = JSON.parse(quotaQuery.data?.documents[0].quota);
+        setState(quota ?? []);
       }
     }
   }, [quotaQuery.data]);
   return (
     <div className="mt-2 ">
-      <div className="flex gap-2 flex-col justify-center">
+      <div className="flex justify-end">
+        <DatePicker
+          value={dayjs(lotteryDate) ?? undefined}
+          shouldDisableDate={checkActiveDay}
+          format="DD/MM/YYYY"
+          slots={{
+            textField: CustomInput,
+          }}
+          onChange={(e: any) => {
+            if (e !== null) {
+              console.log("", e);
+              setLotteryDate(e.toDate());
+            }
+          }}
+        />
+      </div>
+      <div className="flex gap-2 flex-col mt-4 justify-center">
         <div className="flex flex-1 justify-between">
           <p className="text-center  basis-[100px]">{t("setup.digit")}</p>
           <p className="text-center flex-1">{t("setup.quota")}</p>
@@ -217,16 +277,15 @@ export default function App() {
                     onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                       const text = event.target.value;
                       const sanitizedValue = text.replace(/[^0-9]/g, "");
-
                       setState((prev: any) => {
                         const cloneData: quota[] = _.cloneDeep(prev);
                         const cloneQuery: quota[] = _.cloneDeep(
-                          quotaQuery.data.documents
+                          JSON.parse(quotaQuery.data.documents[0].quota)
                         );
                         const newQuota =
                           _.cloneDeep(cloneQuery[index]?.quota) ?? [];
 
-                        if (newQuota.length >= 10) {
+                        if (newQuota.length >= 5) {
                           newQuota.splice(0, 1);
                         }
                         newQuota.length === 0
@@ -278,3 +337,27 @@ export default function App() {
     </div>
   );
 }
+
+const CustomInput = function BrowserInput(props: any) {
+  const { inputProps, InputProps, ownerState, inputRef, error, ...other } =
+    props;
+
+  return (
+    <div className="relative  w-fit " style={{ fontFamily: "BoonBaanRegular" }}>
+      <p className="">{props.label}</p>
+
+      <div className="relative" ref={InputProps?.ref}>
+        <div className="absolute top-1/2 left-[-4px] -translate-y-1/2 ">
+          {InputProps?.endAdornment}
+        </div>
+
+        <input
+          ref={inputRef}
+          {...inputProps}
+          {...(other as any)}
+          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+        />
+      </div>
+    </div>
+  );
+};

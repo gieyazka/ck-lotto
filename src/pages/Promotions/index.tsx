@@ -125,7 +125,7 @@ const Promotions = () => {
               <p className="mb-6">{t("promotions.point_management")}</p>
             </Button>
           </div>
-          <div className="-mt-6 z-50 border-2 bg-white border-[#D7D7D7] rounded-lg">
+          <div className="-mt-6 z-50 border-2 bg-white overflow-x-auto border-[#D7D7D7] rounded-lg">
             {menuState === 1 ? (
               <RenderFormPromotion
                 groupQuery={groupQuery}

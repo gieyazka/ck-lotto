@@ -1,4 +1,5 @@
 {
+  "logout" : "ออกจากระบบ",
   "deleteConfirm": "คุณต้องการลบหรือไม่?",
   "deleteSuccess": "ลบข้อมูลสำเร็จ",
   "deleteFail": "ลบข้อมูลไ่มสำเร็จ",
@@ -24,7 +25,15 @@
   "password": "รหัสผ่าน",
   "lastName": "นามสกุล",
   "submit": "บันทึก",
+  "amount": "จำนวนเงิน",
   "setup": {
+    "sell": "ปล่อยขาย",
+    "setTime" : "ตั้งค่าเวลาขาย",
+    "noStartTime" : "กรุณาป้อนข้อมูลเวลาเริ่มต้น",
+    "noEndTime" : "กรุณาป้อนข้อมูลเวลาสิ้นสุด",
+    "noAmount" : "กรุณาป้อนข้อมูลจำนวนเงิน",
+    "editAmount" : "แก้ไขจำนวนโอนเงินขั้นต่ำ",
+    "minimumAmount": "จำนวนเงินโอนขั้นต่ำ",
     "setup": "ตั้งค่า",
     "calendar": "ปฏิทิน",
     "startTime": "เวลาเริ่ม",
@@ -38,8 +47,10 @@
     "updateDate": "วันที่อัพเดท",
     "edit": "แก้ไข",
     "editTime": "แก้ไขเวลา",
-    "editTimeConfirm": "ยืนยันการแก้ไขเวลา?",
-
+    "editTimeConfirm": "ยืนยันการแก้ไขเวลาขาย?",
+    "editAmountConfirm": "ยืนยันการแก้ไขจำนวนการโอนเงิน?",
+    "editEmerConfirm": "ยืนยันการแก้ไขการหยุดขายฉุกเฉิน?",
+    "quotaLottery": "โควต้าลอตเตอรี่",
     "quota": "โควต้า",
     "addDateLottery": "ต้องการเพิ่มวันที่ออกรางวัลหรือไม่",
     "deleteDateLottery": "ต้องการลบวันที่ออกรางวัลหรือไม่"
@@ -57,7 +68,7 @@
     "status": "สถานะ",
     "edit": "แก้ไข",
     "groupName": "ชื่อกลุ่ม",
-
+    "noGroup_name" : "กรุณาป้อนชื่อกลุ่ม",
     "addGroup": "เพิ่มกลุ่มผู้ใช้งาน",
     "editGroup": "แก้ไขกลุ่มผู้ใช้งาน",
     "editUser": "แก้ไขผู้ใช้งาน",
@@ -71,6 +82,10 @@
   },
 
   "donotsell": {
+    
+"noInput": "กรุณาใส่หมายเลขลอตเตอรี่",
+    "numberLength": "เลขรางวัลต้องมี 6 หลัก",
+
     "add_number": "เพิ่มตัวเลข",
     "sell": "ปล่อยขาย",
     "not_sell": "ไม่ขาย",
@@ -84,7 +99,9 @@
     "sell_amount": "จำนวนเงินที่ขาย",
     "reward_amount": "จำนวนเงินรางวัล (ถ้าถูก)",
     "control": "ควบคุม",
-    "not_sell_number": "ตัวเลขที่ไม่ขาย"
+    "not_sell_number": "ตัวเลขที่ไม่ขาย",
+    "notSellConfirm": "ต้องการยกเลิกการขายหมายเลข",
+    "sellConfirm": "ต้องการขายหมายเลข"
   },
   "transaction": {
     "transaction": "ธุรกรรม",
@@ -165,16 +182,21 @@
     "delete": "ลบ"
   },
   "promotions": {
+    "promotionType" : "ประเภทโปรโมชั่น",
+    "bonusType" : "ประเภทโบนัส",
+
     "promotions": "โปรโมชั่น",
     "buy_lottery": "ซื้อหวย",
     "promotion_name": "ชื่อโปรโมชั่น",
+    "noPromotion_type": "กรุณาป้อนข้อมูลประเภทโปรโมชั่น",
+    "noBonus_type": "กรุณาป้อนข้อมูลประเภทโบนัส",
     "noPromotion_name": "กรุณาป้อนข้อมูลชื่อโปรโมชั่น",
-    "noPromotion_bonus": "กรุณาป้อนข้อมูล % โบนัส",
+    "noPromotion_bonus": "กรุณาป้อนข้อมูลโบนัส",
     "noPoint_name": "กรุณาป้อนข้อมูลชื่อคะแนน",
-    "noPoint_bonus": "กรุณาป้อนข้อมูล % คะแนน",
+    "noPoint_bonus": "กรุณาป้อนข้อมูลคะแนน",
     "noStartDate": "กรุณาเลือกวันที่เริ่มต้น",
     "noExpireDate": "กรุณาเลือกวันที่สิ้นสุด",
-    "bonus": "% โบนัส",
+    "bonus": "โบนัส",
     "start_date": "วันที่เริ่ม",
     "expire_date": "วันสิ้นสุด",
     "search": "ค้นหา",
@@ -184,7 +206,7 @@
     "delete": "ลบ",
     "point_management": "การจัดการคะแนน",
     "point_name": "ชื่อคะแนน",
-    "point": "% คะแนน"
+    "point": "คะแนน"
   },
   "notifications": {
     "search": "ค้นหา",

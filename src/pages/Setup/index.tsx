@@ -14,8 +14,10 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 
 import Button from "@mui/material/Button";
 import Quota from "./quota";
+import QuotaLottery from "./quotaLottery";
 import React from "react";
 import RenderCalendar from "./calendar";
+import RenderSetup from "./setup";
 import Swal from "sweetalert2";
 import WinPrice from "./winPrice";
 import { callToast } from "../../utils/common";
@@ -26,17 +28,12 @@ import { useTranslation } from "react-i18next";
 import { userData } from "../../utils/type";
 
 const Setup_Page = () => {
-
-
-
   const [menuState, setMenuState] = React.useState(1);
   const { t } = useTranslation();
   const theme = useTheme();
 
-
   return (
     <div className="">
-    
       <div
         style={{ fontFamily: "BoonBaanRegular" }}
         className="rounded-lg bg-white p-4"
@@ -57,23 +54,22 @@ const Setup_Page = () => {
                 className="px-8  rounded-l-xl rounded-r-none border-r-0 shadow-none"
                 variant="contained"
               >
-                <p className="mb-6">{t("setup.calendar")}</p>
+                <p className="mb-6">{t("setup.setup")}</p>
               </Button>
               <Button
-                onClick={() => {
-                  setMenuState(2);
-                }}
                 style={{
                   fontFamily: "BoonBaanRegular",
                   backgroundColor:
                     menuState === 2 ? theme.palette.primary.main : "#B5B8C0",
-
                   color: "white",
                 }}
-                className="px-8 rounded-r-none  rounded-l-none shadow-none"
+                onClick={() => {
+                  setMenuState(2);
+                }}
+                className="px-8  rounded-r-none  rounded-l-none shadow-none"
                 variant="contained"
               >
-                <p className="mb-6">{t("setup.winPrice")}</p>
+                <p className="mb-6">{t("setup.calendar")}</p>
               </Button>
               <Button
                 onClick={() => {
@@ -86,43 +82,68 @@ const Setup_Page = () => {
 
                   color: "white",
                 }}
-                className="px-8 rounded-r-xl  rounded-l-none shadow-none"
+                className="px-8 rounded-r-none  rounded-l-none shadow-none"
+                variant="contained"
+              >
+                <p className="mb-6">{t("setup.winPrice")}</p>
+              </Button>
+              <Button
+                onClick={() => {
+                  setMenuState(4);
+                }}
+                style={{
+                  fontFamily: "BoonBaanRegular",
+                  backgroundColor:
+                    menuState === 4 ? theme.palette.primary.main : "#B5B8C0",
+
+                  color: "white",
+                }}
+                className="px-8 rounded-r-none  rounded-l-none shadow-none"
                 variant="contained"
               >
                 <p className="mb-6">{t("setup.quota")}</p>
               </Button>
+              <Button
+                onClick={() => {
+                  setMenuState(5);
+                }}
+                style={{
+                  fontFamily: "BoonBaanRegular",
+                  backgroundColor:
+                    menuState === 5 ? theme.palette.primary.main : "#B5B8C0",
+
+                  color: "white",
+                }}
+                className="px-8 rounded-r-xl  rounded-l-none shadow-none"
+                variant="contained"
+              >
+                <p className="mb-6">{t("setup.quotaLottery")}</p>
+              </Button>
             </div>
-
-            {/* <Button
-              onClick={() => {
-                onOpenCreateDialog();
-              }}
-              style={{
-                display: menuState === 3 ? "block" : "none",
-                fontFamily: "BoonBaanRegular",
-                backgroundColor: theme.palette.primary.main,
-
-                color: "white",
-              }}
-              className="px-8 rounded-xl  shadow-none "
-              variant="contained"
-            >
-              <p className="mb-6">{t("user_management.addUser")}</p>
-            </Button> */}
           </div>
           <div className="-mt-6 z-50 border-2 bg-white border-[#D7D7D7] rounded-lg min-h-[50vh]">
             {menuState === 1 ? (
               <div className=" p-4">
-                <RenderCalendar />{" "}
+                <RenderSetup />{" "}
               </div>
             ) : menuState === 2 ? (
+              <div className=" p-4">
+                <RenderCalendar />{" "}
+              </div>
+            ) : menuState === 3 ? (
               <div className=" p-4  ">
                 <WinPrice />
               </div>
-            ) : (
+            ) : menuState === 4 ? (
               <div className=" p-4  ">
                 <Quota />
               </div>
+            ) : (
+              menuState === 5 && (
+                <div className=" p-4  ">
+                  <QuotaLottery />
+                </div>
+              )
             )}
             {/* {menuState === 1 ? (
                 <RenderTable_Customer

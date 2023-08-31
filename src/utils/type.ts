@@ -31,9 +31,11 @@ type userData = {
     gender: string,
     type: string,
     avatar: string | null | undefined,
+    groups: any
 
 }
 type groupData = {
+    value?: any;
     $id: string,
     name: string,
     users: userData[],
@@ -94,6 +96,7 @@ type promotionData = {
     bonus: number;
     groups: groupData[]
     users: userData
+    type: string
 }
 type InvoiceKey = `${string}_invoice`;
 type transaction = {
@@ -125,6 +128,7 @@ type pointData = {
     startDate: Date;
     expireDate: Date;
     point: number;
+    type: string
 }
 
 

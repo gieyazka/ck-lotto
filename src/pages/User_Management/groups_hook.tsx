@@ -1,13 +1,23 @@
 import Swal, { SweetAlertResult } from "sweetalert2";
 import {
-  addPoints,
+  addGroup,
+  addPromotions,
   addUserLog,
-  deletePoints,
+  deleteGroup,
+  deletePromotions,
   getPoints,
+  getPromotions,
+  getUserGroup,
   getUserSession,
-  updatePoints,
+  updateGroup,
+  updatePromotions,
 } from "../../utils/service";
-import { groupData, loadingStore, pointData, winPrice } from "../../utils/type";
+import {
+  groupData,
+  loadingStore,
+  promotionData,
+  winPrice,
+} from "../../utils/type";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
 import React from "react";
@@ -16,7 +26,7 @@ import { t } from "i18next";
 import { useLoading } from "../../store";
 import { useTheme } from "@mui/material";
 
-const usePoint = () => {
+const useHook = () => {
   const queryClient = useQueryClient();
   const theme = useTheme();
   const user = getUserSession();
@@ -24,6 +34,9 @@ const usePoint = () => {
   const [dialogState, setDialogState] = React.useState({
     open: false,
     data: undefined,
+  });
+  const [dialogCreateState, setDialogCreateState] = React.useState({
+    open: false,
   });
   const [search, setSearch] = React.useState("");
   const [paginationState, setPaginationState] = React.useState({
@@ -42,9 +55,21 @@ const usePoint = () => {
       data: undefined,
     });
   };
+
+  const onOpenCreateDialog = () => {
+    setDialogCreateState({
+      open: true,
+    });
+  };
+  const onCloseCreateDialog = () => {
+    setDialogCreateState({
+      open: false,
+    });
+  };
+
   const dataQuery = useQuery(
-    ["points", paginationState.pageIndex, paginationState.pageSize, search],
-    () => getPoints(paginationState, search),
+    ["groups", paginationState.pageIndex, paginationState.pageSize, search],
+    () => getUserGroup(paginationState, search),
     {
       refetchOnMount: "always",
       keepPreviousData: true,
@@ -54,7 +79,7 @@ const usePoint = () => {
   );
   const addQuery = useMutation(
     (props: { data: any }) => {
-      return addPoints(props.data);
+      return addGroup(props.data);
     },
     {
       onMutate: () => {
@@ -63,7 +88,7 @@ const usePoint = () => {
       onSuccess: async (data: any, variables: any, context?: any) => {
         await addUserLog({
           type: "create",
-          logData: JSON.stringify(variables),
+          logData: JSON.stringify(data),
           users: user.$id,
           timestamp: new Date(),
           collection: data.$collectionId,
@@ -92,7 +117,7 @@ const usePoint = () => {
 
   const deleteQuery = useMutation(
     (props: { docId: string }) => {
-      return deletePoints(props.docId);
+      return deleteGroup(props.docId);
     },
     {
       onMutate: () => {
@@ -126,8 +151,8 @@ const usePoint = () => {
     }
   );
   const updateQuery = useMutation(
-    (props: { data: pointData; docId: string }) => {
-      return updatePoints(props.data, props.docId);
+    (props: { data: promotionData; docId: string }) => {
+      return updateGroup(props.data, props.docId);
     },
     {
       onMutate: () => {
@@ -136,7 +161,7 @@ const usePoint = () => {
       onSuccess: async (data: any, variables: any, context?: any) => {
         await addUserLog({
           type: "update",
-          logData: JSON.stringify(variables),
+          logData: JSON.stringify(data),
           users: user.$id,
           timestamp: new Date(),
           collection: data.$collectionId,
@@ -159,42 +184,15 @@ const usePoint = () => {
     }
   );
 
-  const onSubmit = (data: any) => {
-    if (data.name === "") {
+  const onCreate = (data: any) => {
+    if (data.name === "" || data.name === undefined) {
       callToast({
-        title: t("promotions.noPoint_name"),
+        title: t("user_management.noGroup_name"),
         type: "error",
       });
       return;
     }
-    if (data.point == 0 || data.point === undefined) {
-      callToast({
-        title: t("promotions.noPoint_bonus"),
-        type: "error",
-      });
-      return;
-    }
-    if (data.startDate === undefined) {
-      callToast({
-        title: t("promotions.noStartDate"),
-        type: "error",
-      });
-      return;
-    }
-    if (data.expireDate === undefined) {
-      callToast({
-        title: t("promotions.noExpireDate"),
-        type: "error",
-      });
-      return;
-    }
-    if (data.type === "" || data.type === undefined) {
-      callToast({
-        title: t("promotions.noBonus_type"),
-        type: "error",
-      });
-      return;
-    }
+
     Swal.fire({
       title: `${t("createConfirm")}`,
       icon: "info",
@@ -206,14 +204,8 @@ const usePoint = () => {
       reverseButtons: true,
     }).then(async (result: SweetAlertResult) => {
       if (result.isConfirmed) {
-        const { email, $id, username, firstname, lastname, tel, role, type } =
-          user;
-        // data.groups = data.groups.map((d: groupData) => d.$id);
-        data.users = $id;
-        console.log("data", data);
-        // return ;
         await addQuery.mutateAsync({ data });
-        // onCloseDialog();
+        onCloseCreateDialog();
       }
     });
   };
@@ -235,38 +227,10 @@ const usePoint = () => {
     });
   };
 
-  const onEdit = async (data: pointData, docId: string) => {
-    if (data.name === "") {
+  const onEdit = async (data: promotionData, docId: string) => {
+    if (data.name === "" || data.name === undefined) {
       callToast({
-        title: t("promotions.noPoint_name"),
-        type: "error",
-      });
-      return;
-    }
-    if (data.point == 0 || data.point === undefined) {
-      callToast({
-        title: t("promotions.noPoint_bonus"),
-        type: "error",
-      });
-      return;
-    }
-    if (data.type === "" || data.type === undefined) {
-      callToast({
-        title: t("promotions.noBonus_type"),
-        type: "error",
-      });
-      return;
-    }
-    if (data.startDate === undefined) {
-      callToast({
-        title: t("promotions.noStartDate"),
-        type: "error",
-      });
-      return;
-    }
-    if (data.expireDate === undefined) {
-      callToast({
-        title: t("promotions.noExpireDate"),
+        title: t("user_management.noGroup_name"),
         type: "error",
       });
       return;
@@ -282,6 +246,7 @@ const usePoint = () => {
       reverseButtons: true,
     }).then(async (result) => {
       if (result.isConfirmed) {
+        console.log(' data, docId', data, docId)
         await updateQuery.mutateAsync({ data, docId });
         onCloseDialog();
       }
@@ -292,7 +257,7 @@ const usePoint = () => {
     if (text.length >= 3 || text.length === 0) {
       queryClient.cancelQueries({
         queryKey: [
-          "points",
+          "promotions",
           paginationState.pageIndex,
           paginationState.pageSize,
           search,
@@ -305,7 +270,7 @@ const usePoint = () => {
   return {
     onEdit,
     onDelete,
-    onSubmit,
+    onCreate,
     updateQuery,
     deleteQuery,
     addQuery,
@@ -316,7 +281,10 @@ const usePoint = () => {
     paginationState,
     onChangeSearch,
     dialogState,
+    onOpenCreateDialog,
+    onCloseCreateDialog,
+    dialogCreateState,
   };
 };
 
-export default usePoint;
+export default useHook;

@@ -1,4 +1,5 @@
 {
+  "logout" : "Logout",
   "deleteConfirm": "Do you want to delete?",
   "deleteSuccess": "Delete Success",
   "deleteFail": "Delete Failed",
@@ -26,9 +27,18 @@
   "gender": "Gender",
   "submit": "Submit",
   "cancle": "Cancle",
+  "amount": "amount",
   "dashboard": {},
 
   "setup": {
+    "sell": "Sell",
+
+    "setTime": "Setting sell time",
+    "noStartTime": "Please enter the start time",
+    "noEndTime": "Please enter the end time",
+    "noAmount": "Please enter the amount.",
+    "editAmount": "Edit Minimum Transfer Amount",
+    "minimumAmount": "Minimum transfer amount",
     "setup": "Set up",
     "calendar": "Calendar",
     "startTime": "Start Time",
@@ -42,12 +52,18 @@
     "updateDate": "Update Date",
     "edit": "Edit",
     "editTime": "Edit Time",
-    "editTimeConfirm": "Do you want to edit time",
+    "editTimeConfirm": "Do you want to edit sell time",
+    "editAmountConfirm": "Confirm minimum transfer?",
+    "editEmerConfirm": "Confirm the edit of the emergency stop?",
     "quota": "Quota",
+    "quotaLottery": "Quota Lottery",
     "addDateLottery": "Do you want to add lottery date?",
     "deleteDateLottery": "Do you want to delete lottery remove?"
   },
   "donotsell": {
+    "noInput": "Please input lottery number",
+    "numberLength": "Number should be 6 digit",
+
     "add_number": "Add number",
     "sell": "sell",
     "not_sell": "not sell",
@@ -61,7 +77,9 @@
     "sell_amount": "Sell amount",
     "reward_amount": "Reward amount",
     "control": "Control",
-    "not_sell_number": "Not sell number"
+    "not_sell_number": "Not sell number",
+    "notSellConfirm": "Do want to cancel the sale of the number",
+    "sellConfirm": "Do want to open the sale of the number"
   },
   "transaction": {
     "transaction": "Transaction",
@@ -123,6 +141,7 @@
     "user_management": "User Management",
     "search": "Search",
     "no": "No.",
+    "noGroup_name": "Please input group name",
     "name": "Full Name",
     "email": "Email",
     "address": "Address",
@@ -164,16 +183,20 @@
     "delete": "Delete"
   },
   "promotions": {
+    "bonusType": "Bonus Type",
+    "promotionType": "Promotion type",
     "promotions": "Promotions",
     "buy_lottery": "Buy Lottery",
     "promotion_name": "Promotion Name",
+    "noPromotion_type": "Please enter promotion type",
+    "noBonus_type": "Please enter bonus type",
     "noPromotion_name": "Please input Promotions Name",
-    "noPromotion_bonus": "Please input % Bonus",
+    "noPromotion_bonus": "Please input Bonus",
     "noPoint_name": "Please input Point Name",
-    "noPoint_bonus": "Please input % Point",
+    "noPoint_bonus": "Please input Point",
     "noStartDate": "Please select start date",
     "noExpireDate": "Please select expire date",
-    "bonus": "% Bonus",
+    "bonus": "Bonus",
     "start_date": "Start Date",
     "expire_date": "Expire Date",
     "search": "Search",
@@ -183,7 +206,7 @@
     "delete": "Delete",
     "point_management": "Point Management",
     "point_name": "Point Name",
-    "point": "% Point"
+    "point": "Point"
   },
   "notifications": {
     "send_notifications": "Send Notification to Customer",

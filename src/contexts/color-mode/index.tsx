@@ -7,9 +7,11 @@ import React, {
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 
 const theme = createTheme({
+  typography: {
+    fontFamily: "BoonBaanRegular",
+  },
   palette: {
-    mode: 'light',
-
+    mode: "light",
     primary: {
       // light: will be calculated from palette.primary.main,
       main: "#00D1FF",
@@ -32,7 +34,7 @@ const darkTheme = createTheme({
   ...theme,
   palette: {
     ...theme.palette,
-    mode: 'dark',
+    mode: "dark",
   },
 });
 
@@ -80,7 +82,6 @@ export const ColorModeContextProvider: React.FC<PropsWithChildren> = ({
       <ThemeProvider
         // you can change the theme colors here. example: mode === "light" ? RefineThemes.Magenta : RefineThemes.MagentaDark
         theme={mode === "light" ? theme : darkTheme}
-
       >
         <div className={`${mode === "light" ? "" : "dark"}`}>{children}</div>
       </ThemeProvider>

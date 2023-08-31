@@ -43,7 +43,7 @@ export default function App({
   onDelete,
 }: // onEditUser
 {
-  onOpenDialog: (data: any) => void;
+  onOpenDialog: (data: any, type: string | null) => void;
   onDelete: (docId: string) => void;
   onChangeSearch: (text: string) => void;
   userData: UseQueryResult<any>;
@@ -87,7 +87,7 @@ export default function App({
         ),
       },
       {
-        accessorFn: (originalRow) => originalRow.role, 
+        accessorFn: (originalRow) => originalRow.role,
         id: "start_date",
         header: "start_date",
         Header: (
@@ -97,8 +97,8 @@ export default function App({
         ), //optional custom markup
       },
       {
-        accessorFn: (originalRow) => originalRow.tel, 
-        id: "tel", 
+        accessorFn: (originalRow) => originalRow.tel,
+        id: "tel",
         header: "tel",
         Header: (
           <i style={{ fontFamily: "BoonBaanRegular" }}>
@@ -108,25 +108,25 @@ export default function App({
       },
       {
         accessorFn: (originalRow) =>
-          dayjs(originalRow.$createdAt).format("DD-MM-YYYY"), 
-        id: "registerDate", 
+          dayjs(originalRow.$createdAt).format("DD-MM-YYYY"),
+        id: "registerDate",
         header: "registerDate",
         Header: (
           <i style={{ fontFamily: "BoonBaanRegular" }}>
             {t("user_management.registerDate")}
           </i>
-        ), 
+        ),
       },
 
       {
-        accessorFn: (originalRow) => null, 
-        id: "status", 
+        accessorFn: (originalRow) => null,
+        id: "status",
         header: "status",
         Header: (
           <i style={{ fontFamily: "BoonBaanRegular" }}>
             {t("user_management.status")}
           </i>
-        ), 
+        ),
         Cell: ({ cell }) => {
           const data = cell.row.original;
 
@@ -185,7 +185,7 @@ export default function App({
               >
                 <IconButton
                   onClick={() => {
-                    onOpenDialog(data);
+                    onOpenDialog(data,null);
                   }}
                   size="small"
                   aria-label="delete"
@@ -244,9 +244,7 @@ export default function App({
       <MaterialReactTable
         columns={columns}
         data={
-          userData.data?.documents !== undefined
-            ? userData.data.documents
-            : []
+          userData.data?.documents !== undefined ? userData.data.documents : []
         }
         //   enableRowSelection //enable some features
         enableHiding={false}
@@ -311,12 +309,9 @@ export default function App({
           },
         }}
         renderTopToolbarCustomActions={({ table }) => {
-
-          const handleChange = (e: React.ChangeEvent<HTMLInputElement>)=>{
-           
-            onChangeSearch(e.target.value)
-         
-          }
+          const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+            onChangeSearch(e.target.value);
+          };
           return (
             <div className="w-full flex justify-end mx-2 ">
               <div className="relative w-1/4 ">

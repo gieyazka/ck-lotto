@@ -263,16 +263,16 @@ export default function App({
     return !checkDay;
   };
 
-  const test =
+  const data =
     transactionQuery.data?.documents !== undefined
       ? transactionQuery.data.documents
       : [];
-      console.log('',test)
+      console.log('',data)
   return (
     <div className="mt-2">
       <MaterialReactTable
         columns={columns}
-        data={test}
+        data={data}
         //   enableRowSelection //enable some features
         enableHiding={false}
         enableGlobalFilter={false} //turn off a feature
@@ -358,7 +358,7 @@ export default function App({
                           stroke="#B9BCC7"
                           strokeWidth="1.5"
                           strokeLinecap="round"
-                          stroke-linejoin="round"
+                          strokeLinejoin="round"
                         />
                       </g>
                       <defs>

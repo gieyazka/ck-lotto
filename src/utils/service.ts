@@ -2,7 +2,7 @@ import { Account, Client, Databases, Query, Storage } from "appwrite";
 import { adsData, composate, logsData, lottory_history, quota, transaction, userData, winPrice } from "../utils/type";
 import { callToast, compareArraysById } from "./common";
 import dayjs, { Dayjs } from 'dayjs';
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 
 import _ from "lodash";
 import axios from "axios";
@@ -43,7 +43,16 @@ const addUserLog = async (data: logsData) => {
 
 
 
+const getLottery_Quota = async (props: { date: Date | undefined }) => {
+    const date = dayjs(props.date).format("YYYYMMDD")
+    const promise = await databases.listDocuments('lotto', 'lotto_quotas', [
+        Query.equal('date', date),
 
+
+    ]);
+
+    return promise
+}
 
 const getLottery_history = async (props: { pageIndex: number, pageSize: number }) => {
     const promise = await databases.listDocuments('lotto', 'lotto_history', [
@@ -234,6 +243,30 @@ const deleteFeedback = async (docId: string) => {
 }
 
 
+const updateSetting = async (data: any) => {
+    try {
+        const settingData = _.cloneDeep(data);
+        console.log('', settingData)
+        // console.log('winPriceData', winPriceData)
+        if (settingData.$id) {
+            //Update
+            const promise = databases.updateDocument('lotto', 'setup', data.$id, {
+
+                setting: settingData.setting
+            });
+            return promise
+        } else {
+            //Add    
+            const promise = await databases.createDocument(env.VITE_DB, "setup", settingData.type,
+                { type: settingData.type, setting: settingData.setting }
+            );
+            return promise
+        }
+    } catch (error: any) {
+        throw new Error(error.message)
+    }
+}
+
 
 const upDateQuota = async (data: quota) => {
     try {
@@ -243,7 +276,7 @@ const upDateQuota = async (data: quota) => {
             //Update
             const promise = databases.updateDocument('lotto', 'quotas', data.$id, {
 
-                multiply: data.quota,
+                quota: data.quota,
                 updateDate: data.updateDate,
                 users: data.users
             });
@@ -255,6 +288,23 @@ const upDateQuota = async (data: quota) => {
             );
             return promise
         }
+    } catch (error: any) {
+        throw new Error(error.message)
+    }
+}
+const upDateLottery_Quota = async (data: any) => {
+    console.log('data', data)
+    try {
+        // console.log('winPriceData', winPriceData)
+
+        //Update
+        const promise = databases.updateDocument('lotto', 'lotto_quotas', data.$id, {
+
+            quota: data.quota,
+
+        });
+        return promise
+
     } catch (error: any) {
         throw new Error(error.message)
     }
@@ -306,7 +356,11 @@ const upDatelotteryDate = async (dateClick: Date, lotteryDate: any) => {
     }
 }
 
-
+const getComposate = async () => {
+    const promise = await databases.listDocuments('lotto', 'composateAmount'
+    );
+    return promise
+}
 
 
 const getWinPrice = async (props: { pageIndex: number, pageSize: number }) => {
@@ -345,6 +399,12 @@ const getLotteryDate = async (month: Dayjs) => {
         ]);
     return promise
 }
+const getSetup = async () => {
+
+    const promise = await databases.listDocuments('lotto', 'setup',
+    );
+    return promise
+}
 const getLotteryDateTwoYear = async () => {
 
     const startDate = dayjs().startOf("month").subtract(2, 'year').toISOString()
@@ -355,6 +415,12 @@ const getLotteryDateTwoYear = async () => {
             Query.limit(50000),
 
         ]);
+    return promise
+}
+const getLotteryQuotas = async (lotteryDate: Date | undefined) => {
+    const strDate = dayjs(lotteryDate).format("YYYYMMDD")
+    console.log('strDate', strDate)
+    const promise = await databases.getDocument('lotto', 'lotto_quotas', strDate);
     return promise
 }
 const gettransactions = async (date: Date | undefined) => {
@@ -524,6 +590,28 @@ const getAllGroup = async () => {
 
 
 }
+const getAccumulate = async (lotteryType: number, lotteryDate: Date | undefined, pagination: { pageIndex: number, pageSize: number }) => {
+    const dateLottery = dayjs(lotteryDate).format("YYYYMMDD")
+    const promise = await databases.listDocuments('lotto', `${dateLottery}_accumulate`,
+        [
+            Query.equal('lotteryType', lotteryType),
+            Query.orderDesc("amount"),
+            Query.limit(pagination.pageSize),
+            Query.offset((pagination.pageIndex) * pagination.pageSize)
+            // Query.limit(5)
+        ]);
+
+    return promise
+}
+const getSingleAccumulate = async (lotteryNumber: string, lotteryDate: Date | undefined) => {
+    const dateLottery = dayjs(lotteryDate).format("YYYYMMDD")
+    const promise = await databases.listDocuments('lotto', `${dateLottery}_accumulate`,
+        [
+            Query.equal('lottery', lotteryNumber),
+        ]);
+
+    return promise
+}
 const getCustomer = async (pagination: { pageIndex: number, pageSize: number }, textSearch: string) => {
     if (textSearch !== "") {
         const searchUsername = await databases.listDocuments('lotto', 'users',
@@ -562,6 +650,18 @@ const getCustomer = async (pagination: { pageIndex: number, pageSize: number }, 
             ]);
 
         return promise
+    }
+
+}
+const getCustomerHideTell = async (pagination: { pageIndex: number, pageSize: number }, textSearch: string) => {
+    try {
+
+        const res = await axios.post(`${env.VITE_backend}/getCustomer`, {
+            pagination, textSearch
+        })
+        return res.data
+    } catch (error : Error) {
+        throw new Error(error).message
     }
 
 }
@@ -605,19 +705,19 @@ const createUser = async (data: userData) => {
 
 const updateUser = async (data: userData, docId: string) => {
     try {
-        const adsData = _.cloneDeep(data);
+        const userData = _.cloneDeep(data);
         if (data.image) {
 
             const resAddFile = await addFile([data.image])
             if (resAddFile) {
 
-                adsData.avatar = resAddFile[0];
+                userData.avatar = resAddFile[0];
             }
         }
-        const { firstname, lastname, address, tel, avatar, gender
-        } = adsData;
+        const { firstname, lastname, address, tel, avatar, gender, groups
+        } = userData;
         const promise = await databases.updateDocument(env.VITE_DB, "users", docId, {
-            firstname, lastname, avatar, address, tel, gender
+            firstname, lastname, avatar, address, tel, gender, groups
         });
 
         return promise
@@ -680,13 +780,40 @@ const getUserSession = () => {
     const user = JSON.parse(sessionStorage.getItem("User") || "null");
     return user
 }
+const getUserById = async (id: string) => {
+    const res = await databases.getDocument('lotto', 'users', id);
+    return res
+}
 
 
 const addPromotions = async (data: any) => {
     try {
 
         const promise = await databases.createDocument(env.VITE_DB, "promotions", 'unique()',
-            { name: data.name, startDate: data.startDate, expireDate: data.expireDate, users: data.users, bonus: parseFloat(data.bonus), groups: data.groups }
+            { type: data.type, name: data.name, startDate: data.startDate, expireDate: data.expireDate, users: data.users, bonus: parseFloat(data.bonus), groups: data.groups }
+        );
+        return promise
+    } catch (error: any) {
+        throw new Error(error.message)
+    }
+}
+const addNotSell = async (lotteryNumber: string, lotteryDate: Date | undefined) => {
+    try {
+        const dateLottery = dayjs(lotteryDate).format("YYYYMMDD")
+
+        const promise = await databases.createDocument(env.VITE_DB, `${dateLottery}_accumulate`, 'unique()',
+            { isSell: false, lotteryType: lotteryNumber.length, lottery: lotteryNumber, amount: 0 }
+        );
+        return promise
+    } catch (error: any) {
+        throw new Error(error.message)
+    }
+}
+const addGroup = async (data: any) => {
+    try {
+
+        const promise = await databases.createDocument(env.VITE_DB, "groups", data.name,
+            data
         );
         return promise
     } catch (error: any) {
@@ -708,12 +835,61 @@ const deletePromotions = async (docId: string) => {
         throw new Error(error.message)
     }
 }
+const deleteGroup = async (docId: string) => {
+    try {
+
+        const promise = databases.updateDocument('lotto', 'groups', docId,
+
+            { isDelete: true }
+        );
+        return promise
+
+
+
+    } catch (error: any) {
+        throw new Error(error.message)
+    }
+}
 const updatePromotions = async (data: any, docId: string) => {
     try {
 
         const promise = databases.updateDocument('lotto', 'promotions', docId,
 
-            { name: data.name, startDate: data.startDate, expireDate: data.expireDate, users: data.users, bonus: parseFloat(data.bonus), groups: data.groups }
+            { type: data.type, name: data.name, startDate: data.startDate, expireDate: data.expireDate, users: data.users, bonus: parseFloat(data.bonus), groups: data.groups }
+
+        );
+        return promise
+
+
+
+    } catch (error: any) {
+        throw new Error(error.message)
+    }
+}
+const updateSell = async (data: any) => {
+    console.log('data', data)
+    try {
+
+        const promise = databases.updateDocument('lotto', data.$collectionId, data.$id,
+
+            { isSell: !data.isSell }
+
+        );
+        return promise
+
+
+
+    } catch (error: any) {
+        throw new Error(error.message)
+    }
+}
+const updateGroup = async (data: any, docId: string) => {
+    console.log('data', data)
+    try {
+
+        const promise = databases.updateDocument('lotto', 'groups', docId,
+
+            data
 
         );
         return promise
@@ -731,7 +907,7 @@ const addPoints = async (data: any) => {
 
         const promise = await databases.createDocument(env.VITE_DB, "points", 'unique()',
             {
-                name: data.name, startDate: data.startDate, expireDate: data.expireDate, point: parseFloat(data.point)
+                type: data.type, name: data.name, startDate: data.startDate, expireDate: data.expireDate, point: parseFloat(data.point)
                 // , groups: data.groups
             }
         );
@@ -761,7 +937,7 @@ const updatePoints = async (data: any, docId: string) => {
         const promise = databases.updateDocument('lotto', 'points', docId,
 
             {
-                name: data.name, startDate: data.startDate, expireDate: data.expireDate, point: parseFloat(data.point)
+                type: data.type, name: data.name, startDate: data.startDate, expireDate: data.expireDate, point: parseFloat(data.point)
                 // , groups: data.groups
             }
 
@@ -789,7 +965,8 @@ const calculateWin = async (date: Date | undefined, userId: string) => {
 }
 
 export {
-    calculateWin, transferMoney, getAllWinPrice, getQuota, upDateQuota,
-    addPoints, deletePoints, updatePoints, addPromotions, updatePromotions, deletePromotions, addFile, addAds, deleteAds, getAds, getUser, appWriteAuth, logout, removeAppwriteSession, getLottery_history, addLottery_history, deleteLottery_history, getWinPrice, upDateWinPrice, upDatelotteryDate, getAllGroup, getPromotions, getPoints,
-    getNews, addNews, deleteNews, getFeedback, deleteFeedback, addUserLog, getCustomer, getEmployee, createUser, deleteUser, updateUser, getUserSession, getUserByEmail, getUserBytel, getLotteryDate, getLotteryDateTwoYear, getUserGroup, gettransactions
+    updateSell, getSingleAccumulate, addNotSell, getLottery_Quota, getCustomerHideTell,
+    updateSetting, calculateWin, transferMoney, getAllWinPrice, getQuota, upDateQuota, getSetup, deleteGroup, addGroup, updateGroup, upDateLottery_Quota,
+    addPoints, deletePoints, updatePoints, addPromotions, updatePromotions, deletePromotions, addFile, addAds, deleteAds, getAds, getUser, appWriteAuth, logout, removeAppwriteSession, getLottery_history, addLottery_history, deleteLottery_history, getWinPrice, getComposate, upDateWinPrice, upDatelotteryDate, getAllGroup, getPromotions, getPoints,
+    getNews, addNews, deleteNews, getFeedback, deleteFeedback, addUserLog, getCustomer, getEmployee, createUser, deleteUser, updateUser, getUserSession, getUserById, getUserByEmail, getUserBytel, getLotteryDate, getLotteryDateTwoYear, getUserGroup, gettransactions, getAccumulate, getLotteryQuotas
 }

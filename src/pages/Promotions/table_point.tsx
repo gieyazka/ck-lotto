@@ -62,7 +62,17 @@ export default function App({
         header: "promotion_name",
         Header: (
           <i style={{ fontFamily: "BoonBaanRegular" }}>
-            {t("promotions.promotion_name")}
+            {t("promotions.point_name")}
+          </i>
+        ), //optional custom markup
+      },
+      {
+        accessorFn: (originalRow) => originalRow.type, //alternate way
+        id: "type", //id required if you use accessorFn instead of accessorKey
+        header: "type",
+        Header: (
+          <i style={{ fontFamily: "BoonBaanRegular" }}>
+            {t("promotions.bonusType")}
           </i>
         ), //optional custom markup
       },
@@ -342,7 +352,7 @@ export default function App({
         //                   stroke="#B9BCC7"
         //                   strokeWidth="1.5"
         //                   strokeLinecap="round"
-        //                   stroke-linejoin="round"
+        //                   strokeLinejoin="round"
         //                 />
         //               </g>
         //               <defs>

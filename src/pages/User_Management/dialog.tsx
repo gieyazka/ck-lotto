@@ -1,7 +1,10 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+
 import * as React from "react";
 
-import { Avatar, Box, Input, TextField } from "@mui/material";
+import { Autocomplete, Avatar, Box, Input, TextField } from "@mui/material";
 import { Controller, useForm } from "react-hook-form";
+import { groupData, userData } from "../../utils/type";
 
 import { AccountCircle } from "@mui/icons-material";
 import AlternateEmailIcon from "@mui/icons-material/AlternateEmail";
@@ -15,18 +18,20 @@ import HomeIcon from "@mui/icons-material/Home";
 import { MuiTelInput } from "mui-tel-input";
 import PersonIcon from "@mui/icons-material/Person";
 import PhoneIphoneIcon from "@mui/icons-material/PhoneIphone";
+import { UserCirlceAdd } from "iconsax-react";
 import WcIcon from "@mui/icons-material/Wc";
 import { t } from "i18next";
-import { userData } from "../../utils/type";
 
 export default function RenderDialog({
   dialogState,
   onCloseDialog,
   onEditUser,
+  groups,
 }: {
   dialogState: { open: boolean; data: any };
   onCloseDialog: () => void;
   onEditUser: (data: userData, docId: string) => void;
+  groups: groupData[];
 }) {
   const fileRef = React.useRef<HTMLInputElement | null>(null);
 
@@ -54,11 +59,14 @@ export default function RenderDialog({
       setValue("tel", dialogState.data?.tel);
       setValue("address", dialogState.data?.address);
       setValue("gender", dialogState.data?.gender);
+      setValue("groups", dialogState.data?.groups);
     }
   }, [dialogState.open]);
   const handleInputChange = (event: any) => {
     setValue("image", event.target.files[0]);
   };
+  console.log("groups", watch("groups"));
+
   return (
     <div>
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -263,6 +271,37 @@ export default function RenderDialog({
                   />
                   {errors.address && <p>This is required.</p>}
                 </div>
+              </div>
+              <div className="flex flex-end gap-2 items-center flex-1 ">
+                <UserCirlceAdd />
+                <Autocomplete
+                  value={watch("groups") ?? []}
+                  //@ts-ignore
+                  onChange={(event: any, newValue: string | null) => {
+                    console.log("groups", groups);
+                    // if(groups.some(group => group))
+                    setValue("groups", newValue);
+                  }}
+                  getOptionDisabled={(option) => {
+                    const groups = watch("groups");
+                    return groups.some(
+                      (group: groupData) => group.$id === option.$id
+                    );
+                  }}
+                  multiple
+                  className="flex-1"
+                  id="tags-standard"
+                  options={groups}
+                  getOptionLabel={(option: groupData) => option.name}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      variant="standard"
+                      label={t("user_management.groupName")}
+                      // placeholder={`${t("user_management.groupName")}`}
+                    />
+                  )}
+                />
               </div>
             </div>
           </div>

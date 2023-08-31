@@ -45,8 +45,9 @@ export default function App({
   paginationState,
   setPaginationState,
   onDelete,
+  user,
 }: {
-  onOpenDialog: (data: any) => void;
+  onOpenDialog: (data: any, type: string | null) => void;
 
   onChangeSearch: (text: string) => void;
   userData: UseQueryResult<any>;
@@ -54,13 +55,14 @@ export default function App({
   paginationState: { pageIndex: number; pageSize: number };
   setPaginationState: (props: any) => void;
   onDelete: (docId: string) => void;
+  user: userData;
 }) {
   const theme = useTheme();
 
   const { t } = useTranslation();
 
-  const columns = useMemo<MRT_ColumnDef<userData>[]>(
-    () => [
+  const columns = useMemo<MRT_ColumnDef<userData>[]>(() => {
+    const columns = [
       // {
       //   accessorFn: (originalRow) => originalRow.no, //alternate way
       //   id: "no", //id required if you use accessorFn instead of accessorKey
@@ -167,85 +169,89 @@ export default function App({
           );
         }, //render Date as a string
       },
-      {
-        accessorFn: (originalRow) => null, //alternate way
-        id: "edit", //id required if you use accessorFn instead of accessorKey
-        header: "edit",
-        Header: (
-          <div style={{ textAlign: "center", fontFamily: "BoonBaanRegular" }}>
-            {t("user_management.edit")}
-          </div>
-        ),
-        Cell: ({ cell }) => {
-          const data = cell.row.original;
-
-          return (
-            <div className="text-center">
-              <div
-                className="w-fit mx-auto   hover:opacity-80 cursor-pointer"
-                // <div className="w-fit mx-auto rounded-md border-4 border-indigo-500 text-white"
-                // style={{
-                //   backgroundColor: !isSell ? "#299914" : "#FF5555",
-                //   // FF5555 : red
-                // }}
-              >
-                <IconButton
-                  size="small"
-                  aria-label="edit"
-                  sx={{ color: "#FF0000" }}
-                  onClick={() => {
-                    onOpenDialog(data);
-                  }}
-                >
-                  <EditIcon style={{ fill: theme.palette.primary.main }} />
-                </IconButton>
-              </div>
+    ];
+    if (user.role !== "external") {
+      columns.push(
+        {
+          accessorFn: (originalRow) => null, //alternate way
+          id: "edit", //id required if you use accessorFn instead of accessorKey
+          header: "edit",
+          Header: (
+            <div style={{ textAlign: "center", fontFamily: "BoonBaanRegular" }}>
+              {t("user_management.edit")}
             </div>
-          );
-        }, //render Date as a string
-      },
-      {
-        accessorFn: (originalRow) => null, //alternate way
-        id: "delete", //id required if you use accessorFn instead of accessorKey
-        header: "delete",
-        Header: (
-          <div style={{ textAlign: "center", fontFamily: "BoonBaanRegular" }}>
-            {t("user_management.delete")}
-          </div>
-        ),
-        Cell: ({ cell }) => {
-          const data = cell.row.original;
+          ),
+          Cell: ({ cell }) => {
+            const data = cell.row.original;
 
-          return (
-            <div className="text-center">
-              <div
-                className="w-fit mx-auto  hover:opacity-80 cursor-pointer"
-                // <div className="w-fit mx-auto rounded-md border-4 border-indigo-500 text-white"
-                // style={{
-                //   backgroundColor: !isSell ? "#299914" : "#FF5555",
-                //   // FF5555 : red
-                // }}
-              >
-                <IconButton
-                  size="small"
-                  aria-label="delete"
-                  sx={{ color: "#FF0000" }}
-                  onClick={async () => {
-                    if (data.$id !== undefined) {
-                      await onDelete(data.$id);
-                    }
-                  }}
+            return (
+              <div className="text-center">
+                <div
+                  className="w-fit mx-auto   hover:opacity-80 cursor-pointer"
+                  // <div className="w-fit mx-auto rounded-md border-4 border-indigo-500 text-white"
+                  // style={{
+                  //   backgroundColor: !isSell ? "#299914" : "#FF5555",
+                  //   // FF5555 : red
+                  // }}
                 >
-                  <DeleteIcon style={{ fill: "red" }} />
-                </IconButton>
+                  <IconButton
+                    size="small"
+                    aria-label="edit"
+                    sx={{ color: "#FF0000" }}
+                    onClick={() => {
+                      onOpenDialog(data, "customer");
+                    }}
+                  >
+                    <EditIcon style={{ fill: theme.palette.primary.main }} />
+                  </IconButton>
+                </div>
               </div>
+            );
+          }, //render Date as a string
+        },
+        {
+          accessorFn: (originalRow) => null, //alternate way
+          id: "delete", //id required if you use accessorFn instead of accessorKey
+          header: "delete",
+          Header: (
+            <div style={{ textAlign: "center", fontFamily: "BoonBaanRegular" }}>
+              {t("user_management.delete")}
             </div>
-          );
-        }, //render Date as a string
-      },
-    ],
-    [i18n.language]
-  );
+          ),
+          Cell: ({ cell }) => {
+            const data = cell.row.original;
+
+            return (
+              <div className="text-center">
+                <div
+                  className="w-fit mx-auto  hover:opacity-80 cursor-pointer"
+                  // <div className="w-fit mx-auto rounded-md border-4 border-indigo-500 text-white"
+                  // style={{
+                  //   backgroundColor: !isSell ? "#299914" : "#FF5555",
+                  //   // FF5555 : red
+                  // }}
+                >
+                  <IconButton
+                    size="small"
+                    aria-label="delete"
+                    sx={{ color: "#FF0000" }}
+                    onClick={async () => {
+                      if (data.$id !== undefined) {
+                        await onDelete(data.$id);
+                      }
+                    }}
+                  >
+                    <DeleteIcon style={{ fill: "red" }} />
+                  </IconButton>
+                </div>
+              </div>
+            );
+          }, //render Date as a string
+        }
+      );
+    }
+    return columns
+  }, [i18n.language]);
 
   return (
     <div className="mt-2 ">
@@ -315,12 +321,9 @@ export default function App({
           },
         }}
         renderTopToolbarCustomActions={({ table }) => {
-
-          const handleChange = (e)=>{
-           
-            onChangeSearch(e.target.value)
-         
-          }
+          const handleChange = (e) => {
+            onChangeSearch(e.target.value);
+          };
           return (
             <div className="w-full flex justify-end mx-2 ">
               <div className="relative w-1/4 ">

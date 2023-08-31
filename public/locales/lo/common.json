@@ -1,4 +1,5 @@
 {
+  "logout": "ອອກຈາກລະບົບ",
   "deleteConfirm": "ທ່ານຕ້ອງການລຶບບໍ?",
   "deleteSuccess": "ການລຶບຂໍ້ມູນສຳເລັດແລ້ວ",
   "deleteFail": "ລຶບຂໍ້ມູນບໍ່ສຳເລັດ",
@@ -22,10 +23,19 @@
   "sameEmail": "ອີເມວມີຢູ່ໃນລະບົບແລ້ວ",
   "sameUsername": "แล้วຊື່ບັນຊີຊໍ້າກັນ",
   "password": "ລະຫັດຜ່ານ",
-
+  "amount": "ຈໍານວນເງິນ",
   "confirm": "ຢືນຢັນ",
   "cancle": "ຍົກເລີກ",
   "setup": {
+    "sell": "ປ່ອຍຂາຍ",
+
+    "setTime": "ຕັ້ງເວລາທີ່ຈະຂາຍ",
+    "noStartTime": "ກະລຸນາໃສ່ເວລາເລີ່ມຕົ້ນ",
+    "noEndTime": "ກະລຸນາໃສ່ເວລາສິ້ນສຸດ",
+
+    "noAmount": "ກະລຸນາໃສ່ຈໍານວນ",
+    "editAmount": "ແກ້ໄຂຈໍານວນການໂອນເງິນຂັ້ນຕ່ໍາ",
+    "minimumAmount": "ຈໍານວນການໂອນເງິນຂັ້ນຕ່ໍາ",
     "setup": "ຕັ້ງຄ່າ",
     "calendar": "ປະຕິທິນ",
     "startTime": "ເວລາເລີ່ມ",
@@ -39,13 +49,18 @@
     "updateDate": "ວັນທີອັບເດດ",
     "edit": "ແກ້ໄຂ",
     "editTime": "ແກ້ໄຂເວລາ",
-    "editTimeConfirm": "ຢືນຢັນການແກ້ໄຂເວລາ?",
+    "editTimeConfirm": "ຢືນຢັນການແກ້ໄຂເວລາຂາຍ?",
+    "editEmerConfirm": "ຢືນຢັນການແກ້ໄຂການຢຸດສຸກເສີນບໍ?",
+    "editAmountConfirm": "ຢືນຢັນການປ່ຽນແປງຈໍານວນການສົ່ງເງິນ?",
+    "quotaLottery": "ຫວຍໂຄຕ້າ",
     "quota": "ໂຄຕ້າ",
     "addDateLottery": "ຕ້ອງການເພີ່ມວັນທີໃຫ້ລາງວັນບໍ?",
     "deleteDateLottery": "ຕ້ອງການລຶບວັນທີໃຫ້ລາງວັນບໍ"
   },
 
   "donotsell": {
+    "noInput": "ກະລຸນາໃສ່ເລກຫວຍ",
+    "numberLength": "ໝາຍເລກລາງວັນຕ້ອງມີ 6 ຕົວເລກ",
     "add_number": "ເພີ່ມຕົວເລກ",
     "sell": "ປ່ອຍຂາຍ",
     "not_sell": "ບໍ່ຂາຍ",
@@ -59,7 +74,9 @@
     "sell_amount": "ຈໍານວນເງິນທີ່ຂາຍ",
     "reward_amount": "ຈໍານວນເງິນລາງວັນ",
     "control": "ຄວບຄຸມ",
-    "not_sell_number": "ຕົວເລກທີ່ບໍ່ຂາຍ"
+    "not_sell_number": "ຕົວເລກທີ່ບໍ່ຂາຍ",
+    "notSellConfirm": "ຕ້ອງການຍົກເລີກການຂາຍເບີ",
+    "sellConfirm": "ຕ້ອງການເປີດຂາຍເບີ"
   },
   "transaction": {
     "transaction": "ທຸລະກໍາ",
@@ -106,6 +123,7 @@
     "registerDate": "ວັນທີລົງທະບຽນ",
     "status": "ສະຖານະ",
     "groupName": "ຊື່​ກຸ່ມ",
+    "noGroup_name": "ກະລຸນາໃສ່ຊື່ກຸ່ມ",
 
     "addGroup": "ເພີ່ມກຸ່ມຜູ້ໃຊ້",
     "editGroup": "ແກ້ໄຂກຸ່ມຜູ້ໃຊ້",
@@ -162,16 +180,20 @@
     "delete": "ລຶບ"
   },
   "promotions": {
+    "bonusType": "ປະເພດໂບນັດ",
+    "promotionType": "ປະເພດສົ່ງເສີມ",
     "promotions": "ໂປຣໂມຊັ່ນ",
     "buy_lottery": "ຊື້ຫວຍ",
     "promotion_name": "ຊື້ໂປຣໂມຊັ່ນ",
+    "noPromotion_type": "ກະລຸນາໃສ່ປະເພດໂປຣໂມຊັນ",
+    "noBonus_type": "ກະລຸນາໃສ່ປະເພດໂບນັດ",
     "noPromotion_name": "ກະລຸນາໃສ່ຊື່ໂປຣໂມຊັນ",
-    "noPromotion_bonus": "ກະລຸນາໃສ່ % ໂບນັດ",
+    "noPromotion_bonus": "ກະລຸນາໃສ່ໂບນັດ",
     "noPoint_name": "ກະລຸນາໃສ່ຊື່ຄະແນນ.",
-    "noPoint_bonus": "ກະລຸນາໃສ່ % ຄະແນນ",
+    "noPoint_bonus": "ກະລຸນາໃສ່ຄະແນນ",
     "noStartDate": "ກະລຸນາເລືອກວັນທີເລີ່ມຕົ້ນ",
     "noExpireDate": "ກະລຸນາເລືອກວັນທີໝົດອາຍຸ",
-    "bonus": "% ໂບນັດ",
+    "bonus": "ໂບນັດ",
     "start_date": "ວັນທີເລີ່ມ",
     "expire_date": "ວັນສິ້ນສຸດ",
     "search": "ຄົ້ນຫາ",
@@ -181,7 +203,7 @@
     "delete": "ລຶບ",
     "point_management": "ການຈັດການຄະແນນ",
     "point_name": "ຊື້ຄະແນນ",
-    "point": "% ຄະແນນ"
+    "point": "ຄະແນນ"
   },
   "notifications": {
     "search": "ຄົ້ນຫາ",

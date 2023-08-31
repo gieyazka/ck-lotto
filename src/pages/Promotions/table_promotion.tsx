@@ -64,6 +64,16 @@ export default function App({
         ), //optional custom markup
       },
       {
+        accessorFn: (originalRow) => originalRow.type, //alternate way
+        id: "type", //id required if you use accessorFn instead of accessorKey
+        header: "type",
+        Header: (
+          <i style={{ fontFamily: "BoonBaanRegular" }}>
+            {t("promotions.promotionType")}
+          </i>
+        ), //optional custom markup
+      },
+      {
         accessorFn: (originalRow) => originalRow.bonus, //alternate way
         id: "bonus", //id required if you use accessorFn instead of accessorKey
         header: "bonus",

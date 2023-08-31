@@ -31,6 +31,10 @@ const useHook = () => {
     open: false,
     data: undefined,
   });
+  const [dialogCreateState, setDialogCreateState] = React.useState({
+    open: false,
+    data: undefined,
+  });
   const [search, setSearch] = React.useState("");
   const [paginationState, setPaginationState] = React.useState({
     pageIndex: 0,
@@ -44,6 +48,18 @@ const useHook = () => {
   };
   const onCloseDialog = () => {
     setDialogState({
+      open: false,
+      data: undefined,
+    });
+  };
+  const onOpenCreateDialog = (data: any) => {
+    setDialogCreateState({
+      open: true,
+      data: data,
+    });
+  };
+  const onCloseCreateDialog = () => {
+    setDialogCreateState({
       open: false,
       data: undefined,
     });
@@ -142,7 +158,7 @@ const useHook = () => {
       onSuccess: async (data: any, variables: any, context?: any) => {
         await addUserLog({
           type: "update",
-          logData: JSON.stringify(data),
+          logData: JSON.stringify(variables),
           users: user.$id,
           timestamp: new Date(),
           collection: data.$collectionId,
@@ -194,6 +210,14 @@ const useHook = () => {
       });
       return;
     }
+    if (data.type === undefined || data.type === "") {
+      callToast({
+        title: t("promotions.noPromotion_type"),
+        type: "error",
+      });
+      return;
+    }
+
     Swal.fire({
       title: `${t("createConfirm")}`,
       icon: "info",
@@ -207,9 +231,9 @@ const useHook = () => {
       if (result.isConfirmed) {
         const { email, $id, username, firstname, lastname, tel, role, type } =
           user;
-        data.groups = data.groups.map((d: groupData) => d.$id);
+        data.groups = data.groups.map((d: groupData) => d.value.$id);
         data.users = $id;
-        console.log("data", data);
+
         // return ;
         await addQuery.mutateAsync({ data });
         // onCloseDialog();
@@ -242,6 +266,13 @@ const useHook = () => {
       });
       return;
     }
+    if (data.type === undefined || data.type === "") {
+      callToast({
+        title: t("promotions.noPromotion_type"),
+        type: "error",
+      });
+      return;
+    }
     if (data.bonus == 0 || data.bonus === undefined) {
       callToast({
         title: t("promotions.noPromotion_bonus"),
@@ -263,6 +294,7 @@ const useHook = () => {
       });
       return;
     }
+    console.log("data", data);
     Swal.fire({
       title: `${t("updateConfirm")}`,
       icon: "info",
@@ -274,6 +306,7 @@ const useHook = () => {
       reverseButtons: true,
     }).then(async (result) => {
       if (result.isConfirmed) {
+        data.groups = data.groups.map((d: groupData) => d.value.$id);
         await updateQuery.mutateAsync({ data, docId });
         onCloseDialog();
       }
@@ -308,6 +341,8 @@ const useHook = () => {
     paginationState,
     onChangeSearch,
     dialogState,
+    onCloseCreateDialog,
+    onOpenCreateDialog,
   };
 };
 

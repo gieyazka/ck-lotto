@@ -1,9 +1,10 @@
 import * as React from "react";
 
 import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { getUserById, logout } from "./utils/service";
 
-import { logout } from "./utils/service";
 import menuItem from "./components/sidebar/menuItem";
+import { useQuery } from "react-query";
 
 //import { Cookie } from "@mui/icons-material";
 
@@ -13,16 +14,34 @@ function ProtectedPage() {
 
 const AuthRoute = () => {
   const location = useLocation();
-  const user = JSON.parse(sessionStorage.getItem("User") || "null");
+  let user = JSON.parse(sessionStorage.getItem("User") || "null");
+  const userQuery = useQuery(
+    ["userSession"],
+    () => getUserById(user["$id"]),
+    {
+      // refetchOnMount : false,
+      keepPreviousData: true,
+      refetchInterval: false,
+      refetchOnWindowFocus: false,
+    }
+  );
+  if (userQuery.isLoading) {
+    return <div>Loading ...</div>;
+  }
+
+
+  user = userQuery.data;
   const locationArr = location.pathname.split("/").reverse();
   let lastPath = "";
   if (!user) {
-    
     logout();
     return <Navigate to="/login" state={{ from: location }} />;
   }
   for (const path of locationArr) {
-    if (isNaN(parseInt(path)) && menuItem.some((d: any) => d.path === path)) {
+    if (
+      isNaN(parseInt(path)) &&
+      menuItem.some((d: any) => d.path === path && d.role === user.role)
+    ) {
       lastPath = path;
       break;
     }

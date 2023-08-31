@@ -7,6 +7,7 @@ import {
   deleteLottery_history,
   getLotteryDateTwoYear,
   getLottery_history,
+  getUserById,
 } from "../../utils/service";
 import { adsData, lotteryDate, lottory_history } from "../../utils/type";
 import dayjs, { Dayjs } from "dayjs";
@@ -43,12 +44,18 @@ interface Data {
 }
 
 const Lottery_History = () => {
-  const user = JSON.parse(sessionStorage.getItem("User") || "null");
-
+  let user = JSON.parse(sessionStorage.getItem("User") || "null");
   const [paginationState, setPaginationState] = React.useState({
     pageIndex: 0,
     pageSize: 25,
   });
+  const userQuery = useQuery(["userSession"], () => getUserById(user["$id"]), {
+    // refetchOnMount : false,
+    keepPreviousData: true,
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+  });
+
   //  console.log(paginationState);
 
   const lotter_history = useQuery(
@@ -186,8 +193,8 @@ const Lottery_History = () => {
       });
       return;
     }
-    const checkDay = lotter_history.data?.documents?.some((d : lottory_history) =>
-      dayjs(d.date).isSame(dayjs(date).startOf("day"))
+    const checkDay = lotter_history.data?.documents?.some(
+      (d: lottory_history) => dayjs(d.date).isSame(dayjs(date).startOf("day"))
     );
     if (checkDay) {
       callToast({
@@ -228,10 +235,10 @@ const Lottery_History = () => {
   const checkActiveDay = (date: Dayjs) => {
     const day = date.day();
     const forDate = date.format("YYYY MM DD");
-    const checkDay = lotterDateQuery.data?.documents?.some((d : lotteryDate) =>
+    const checkDay = lotterDateQuery.data?.documents?.some((d: lotteryDate) =>
       dayjs(d.date).isSame(date.startOf("day"))
     );
- 
+
     return !checkDay;
   };
 
@@ -240,57 +247,63 @@ const Lottery_History = () => {
       ? lotter_history.data.documents
       : [];
   }, [lotter_history.data]);
+  if (userQuery.isLoading) {
+    return <div>Loading ...</div>;
+  }
+  user = userQuery.data;
   return (
     <div className="">
       {/* <div style={{fontFamily : "BoonBaanRegular"}}> */}
-
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="flex justify-between items-end">
-          <div className="flex gap-2 items-end ">
-            <DatePicker
-              shouldDisableDate={checkActiveDay}
-              format="DD/MM/YYYY"
-              // minDate={watch("endDate") && dayjs(watch("endDate"))}
-              value={dayjs(watch("date"), "YYYYMMDD") ?? undefined}
-              label={t("lotto_history.lottery_date")}
-              slots={{
-                textField: CustomInput,
-              }}
-              onChange={(e: any) => {
-                if (e !== null) {
-                  setValue("date", dayjs(e).toDate());
-                  // filterStore.handleChangeStartDate(e);
-                }
-              }}
-            />
-            <input
-              maxLength={6}
-              type="text"
-              className="bg-gray-50 border h-fit py-2.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full px-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-              placeholder={t("lotto_history.number") || ""}
-              value={watch("lottery_number")}
-              onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-                const text = event.target.value;
-                const sanitizedValue = text.replace(/[^0-9]/g, "");
-                setValue("lottery_number", sanitizedValue);
-              }}
-              // {...register("lottery_number")}
-            />
+      {user.role !== "external" && (
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="flex justify-between items-end">
+            <div className="flex gap-2 items-end ">
+              <DatePicker
+                shouldDisableDate={checkActiveDay}
+                format="DD/MM/YYYY"
+                // minDate={watch("endDate") && dayjs(watch("endDate"))}
+                value={dayjs(watch("date"), "YYYYMMDD") ?? undefined}
+                label={t("lotto_history.lottery_date")}
+                slots={{
+                  textField: CustomInput,
+                }}
+                onChange={(e: any) => {
+                  if (e !== null) {
+                    setValue("date", dayjs(e).toDate());
+                    // filterStore.handleChangeStartDate(e);
+                  }
+                }}
+              />
+              <input
+                maxLength={6}
+                type="text"
+                className="bg-gray-50 border h-fit py-2.5 border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full px-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                placeholder={t("lotto_history.number") || ""}
+                value={watch("lottery_number")}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                  const text = event.target.value;
+                  const sanitizedValue = text.replace(/[^0-9]/g, "");
+                  setValue("lottery_number", sanitizedValue);
+                }}
+                // {...register("lottery_number")}
+              />
+            </div>
+            <Button
+              type="submit"
+              className="h-fit py-2.5"
+              sx={{ color: "white", fontFamily: "BoonBaanRegular" }}
+              variant="contained"
+              startIcon={<Add />}
+            >
+              {t("lotto_history.add_lottery")}
+            </Button>
           </div>
-          <Button
-            type="submit"
-            className="h-fit py-2.5"
-            sx={{ color: "white", fontFamily: "BoonBaanRegular" }}
-            variant="contained"
-            startIcon={<Add />}
-          >
-            {t("lotto_history.add_lottery")}
-          </Button>
-        </div>
-      </form>
+        </form>
+      )}
       {/* <RenderDialog state={[dialogState, setDialogState]} /> */}
       <div className="text-xl">
         <RenderTable
+          user={user}
           query={lotter_history}
           paginationState={paginationState}
           setPaginationState={setPaginationState}

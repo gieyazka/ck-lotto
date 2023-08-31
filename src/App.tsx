@@ -59,7 +59,7 @@ function App() {
               <Route path="feedback" element={<Feedback />} />
               <Route path="user_management" element={<User_Management />} />
               <Route path="setup" element={<Setup />} />
-              <Route path="/*" element={<div>test</div>} />
+              <Route path="/*" element={<div>Not Found Page </div>} />
             </Route>
           </Route>
           <Route path="/" element={<AuthRoute />}>

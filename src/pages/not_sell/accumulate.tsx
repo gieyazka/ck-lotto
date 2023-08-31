@@ -1,13 +1,22 @@
 import Swal, { SweetAlertResult } from "sweetalert2";
 import {
-  addPoints,
+  addNotSell,
+  addPromotions,
   addUserLog,
-  deletePoints,
+  deletePromotions,
+  getAccumulate,
   getPoints,
+  getPromotions,
   getUserSession,
-  updatePoints,
+  updatePromotions,
+  updateSell,
 } from "../../utils/service";
-import { groupData, loadingStore, pointData, winPrice } from "../../utils/type";
+import {
+  groupData,
+  loadingStore,
+  promotionData,
+  winPrice,
+} from "../../utils/type";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
 import React from "react";
@@ -16,7 +25,10 @@ import { t } from "i18next";
 import { useLoading } from "../../store";
 import { useTheme } from "@mui/material";
 
-const usePoint = () => {
+const useHook = (props: {
+  lotteryType: number;
+  lotteryDate: Date | undefined;
+}) => {
   const queryClient = useQueryClient();
   const theme = useTheme();
   const user = getUserSession();
@@ -25,10 +37,14 @@ const usePoint = () => {
     open: false,
     data: undefined,
   });
+  const [dialogCreateState, setDialogCreateState] = React.useState({
+    open: false,
+    data: undefined,
+  });
   const [search, setSearch] = React.useState("");
   const [paginationState, setPaginationState] = React.useState({
     pageIndex: 0,
-    pageSize: 25,
+    pageSize: 5,
   });
   const onOpenDialog = (data: any) => {
     setDialogState({
@@ -42,10 +58,29 @@ const usePoint = () => {
       data: undefined,
     });
   };
+  const onOpenCreateDialog = (data: any) => {
+    setDialogCreateState({
+      open: true,
+      data: data,
+    });
+  };
+  const onCloseCreateDialog = () => {
+    setDialogCreateState({
+      open: false,
+      data: undefined,
+    });
+  };
   const dataQuery = useQuery(
-    ["points", paginationState.pageIndex, paginationState.pageSize, search],
-    () => getPoints(paginationState, search),
+    [
+      "accumulate",
+      props.lotteryType,
+      props.lotteryDate,
+      paginationState.pageIndex,
+      paginationState.pageSize,
+    ],
+    () => getAccumulate(props.lotteryType, props.lotteryDate, paginationState),
     {
+      enabled: props.lotteryDate !== undefined,
       refetchOnMount: "always",
       keepPreviousData: true,
       refetchInterval: false,
@@ -53,8 +88,8 @@ const usePoint = () => {
     }
   );
   const addQuery = useMutation(
-    (props: { data: any }) => {
-      return addPoints(props.data);
+    (props: { lotteryDate: Date | undefined; lotteryNumber: string }) => {
+      return addNotSell(props.lotteryNumber, props.lotteryDate);
     },
     {
       onMutate: () => {
@@ -63,7 +98,7 @@ const usePoint = () => {
       onSuccess: async (data: any, variables: any, context?: any) => {
         await addUserLog({
           type: "create",
-          logData: JSON.stringify(variables),
+          logData: JSON.stringify(data),
           users: user.$id,
           timestamp: new Date(),
           collection: data.$collectionId,
@@ -92,7 +127,7 @@ const usePoint = () => {
 
   const deleteQuery = useMutation(
     (props: { docId: string }) => {
-      return deletePoints(props.docId);
+      return deletePromotions(props.docId);
     },
     {
       onMutate: () => {
@@ -126,8 +161,8 @@ const usePoint = () => {
     }
   );
   const updateQuery = useMutation(
-    (props: { data: pointData; docId: string }) => {
-      return updatePoints(props.data, props.docId);
+    (props: { data: any }) => {
+      return updateSell(props.data);
     },
     {
       onMutate: () => {
@@ -159,64 +194,29 @@ const usePoint = () => {
     }
   );
 
-  const onSubmit = (data: any) => {
-    if (data.name === "") {
-      callToast({
-        title: t("promotions.noPoint_name"),
-        type: "error",
-      });
-      return;
-    }
-    if (data.point == 0 || data.point === undefined) {
-      callToast({
-        title: t("promotions.noPoint_bonus"),
-        type: "error",
-      });
-      return;
-    }
-    if (data.startDate === undefined) {
-      callToast({
-        title: t("promotions.noStartDate"),
-        type: "error",
-      });
-      return;
-    }
-    if (data.expireDate === undefined) {
-      callToast({
-        title: t("promotions.noExpireDate"),
-        type: "error",
-      });
-      return;
-    }
-    if (data.type === "" || data.type === undefined) {
-      callToast({
-        title: t("promotions.noBonus_type"),
-        type: "error",
-      });
-      return;
-    }
-    Swal.fire({
-      title: `${t("createConfirm")}`,
-      icon: "info",
-      showCancelButton: true,
-      confirmButtonColor: theme.palette.primary.main,
-      cancelButtonColor: "#FF5555",
-      confirmButtonText: `${t("confirm")}`,
-      cancelButtonText: `${t("cancle")}`,
-      reverseButtons: true,
-    }).then(async (result: SweetAlertResult) => {
-      if (result.isConfirmed) {
-        const { email, $id, username, firstname, lastname, tel, role, type } =
-          user;
-        // data.groups = data.groups.map((d: groupData) => d.$id);
-        data.users = $id;
-        console.log("data", data);
-        // return ;
-        await addQuery.mutateAsync({ data });
-        // onCloseDialog();
-      }
-    });
-  };
+  // const onSubmit = (data: any) => {
+  //   Swal.fire({
+  //     title: `${t("createConfirm")}`,
+  //     icon: "info",
+  //     showCancelButton: true,
+  //     confirmButtonColor: theme.palette.primary.main,
+  //     cancelButtonColor: "#FF5555",
+  //     confirmButtonText: `${t("confirm")}`,
+  //     cancelButtonText: `${t("cancle")}`,
+  //     reverseButtons: true,
+  //   }).then(async (result: SweetAlertResult) => {
+  //     if (result.isConfirmed) {
+  //       const { email, $id, username, firstname, lastname, tel, role, type } =
+  //         user;
+  //       data.groups = data.groups.map((d: groupData) => d.value.$id);
+  //       data.users = $id;
+
+  //       // return ;
+  //       await addQuery.mutateAsync({ data });
+  //       // onCloseDialog();
+  //     }
+  //   });
+  // };
 
   const onDelete = async (docId: string) => {
     Swal.fire({
@@ -235,44 +235,12 @@ const usePoint = () => {
     });
   };
 
-  const onEdit = async (data: pointData, docId: string) => {
-    if (data.name === "") {
-      callToast({
-        title: t("promotions.noPoint_name"),
-        type: "error",
-      });
-      return;
-    }
-    if (data.point == 0 || data.point === undefined) {
-      callToast({
-        title: t("promotions.noPoint_bonus"),
-        type: "error",
-      });
-      return;
-    }
-    if (data.type === "" || data.type === undefined) {
-      callToast({
-        title: t("promotions.noBonus_type"),
-        type: "error",
-      });
-      return;
-    }
-    if (data.startDate === undefined) {
-      callToast({
-        title: t("promotions.noStartDate"),
-        type: "error",
-      });
-      return;
-    }
-    if (data.expireDate === undefined) {
-      callToast({
-        title: t("promotions.noExpireDate"),
-        type: "error",
-      });
-      return;
-    }
+  const onEdit = async (data: any) => {
+    console.log("data", data);
     Swal.fire({
-      title: `${t("updateConfirm")}`,
+      title: data.isSell
+        ? `${t("donotsell.notSellConfirm")}`
+        : `${t("donotsell.sellConfirm")}`,
       icon: "info",
       showCancelButton: true,
       confirmButtonColor: theme.palette.primary.main,
@@ -282,8 +250,7 @@ const usePoint = () => {
       reverseButtons: true,
     }).then(async (result) => {
       if (result.isConfirmed) {
-        await updateQuery.mutateAsync({ data, docId });
-        onCloseDialog();
+        await updateQuery.mutateAsync({ data });
       }
     });
   };
@@ -292,7 +259,7 @@ const usePoint = () => {
     if (text.length >= 3 || text.length === 0) {
       queryClient.cancelQueries({
         queryKey: [
-          "points",
+          "promotions",
           paginationState.pageIndex,
           paginationState.pageSize,
           search,
@@ -305,7 +272,7 @@ const usePoint = () => {
   return {
     onEdit,
     onDelete,
-    onSubmit,
+    // onSubmit,
     updateQuery,
     deleteQuery,
     addQuery,
@@ -316,7 +283,9 @@ const usePoint = () => {
     paginationState,
     onChangeSearch,
     dialogState,
+    onCloseCreateDialog,
+    onOpenCreateDialog,
   };
 };
 
-export default usePoint;
+export default useHook;

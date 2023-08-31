@@ -151,6 +151,7 @@ export default function RenderDialog({
                         >
                   
                           <MenuItem value={"user"}>User</MenuItem>
+                          <MenuItem value={"external"}>External</MenuItem>
                           <MenuItem value={"admin"}>Admin</MenuItem>
                           <MenuItem value={"super_admin"}>Super Admin</MenuItem>
                         </Select>

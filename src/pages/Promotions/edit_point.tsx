@@ -59,9 +59,10 @@ export default function RenderDialog({
   const onSubmit = (data: any) => onEdit(data, dialogState.data.$id);
   React.useEffect(() => {
     if (dialogState.open) {
-      console.log('dialogState',dialogState)
+      console.log("dialogState", dialogState);
       setValue("name", dialogState.data?.name);
       setValue("point", dialogState.data?.point);
+      setValue("type", dialogState.data?.type);
       setValue("startDate", dayjs(dialogState.data.startDate));
       setValue("expireDate", dayjs(dialogState.data.expireDate));
     }
@@ -95,7 +96,7 @@ export default function RenderDialog({
           <div className="flex mx-4 my-2 gap-4 items-center ">
             <div className="flex flex-col gap-2">
               <div className="flex gap-2 w-full ">
-                <div className="flex flex-end items-center basis-1/2 ">
+                <div className="flex flex-end items-center flex-1">
                   <CardIcon className="mr-2" />
                   <Controller
                     control={control}
@@ -119,7 +120,25 @@ export default function RenderDialog({
 
                   {errors.firstName && <p>This is required.</p>}
                 </div>
-
+              </div>
+              <div className="flex gap-2 pl-7">
+                <Select
+                  displayEmpty
+                  className="font-[BoonBaanRegular] mt-2 w-full"
+                  value={watch("type") ?? ""}
+                  input={<Input />}
+                  sx={{
+                    maxWidth: "144px",
+                    minWidth: "144px",
+                  }}
+                  onChange={(e) => {
+                    setValue("type", e.target.value);
+                  }}
+                >
+                  <MenuItem value={""}>Select Type</MenuItem>{" "}
+                  <MenuItem value={"fixed"}>fixed</MenuItem>{" "}
+                  <MenuItem value={"percent"}>percent</MenuItem>
+                </Select>
                 <div className="flex flex-end items-center flex-1 ">
                   <Controller
                     control={control}
@@ -144,9 +163,6 @@ export default function RenderDialog({
                   />
                 </div>
               </div>
-
-         
-
               <div className="flex gap-2">
                 <div className="flex flex-end items-center  gap-2 basis-1/2 pl-7">
                   <DatePicker

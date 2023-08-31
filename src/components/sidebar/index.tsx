@@ -33,12 +33,15 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
+import { Logout } from "iconsax-react";
 import MailIcon from "@mui/icons-material/Mail";
 import MenuIcon from "@mui/icons-material/Menu";
 import MenuItems from "./menuItem";
 import MuiDrawer from "@mui/material/Drawer";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
+import { getUserById } from "../../utils/service";
+import { useQuery } from "react-query";
 
 const drawerWidth = 240;
 
@@ -130,7 +133,24 @@ export default function Layout() {
   const handleDrawerToggle = () => {
     setOpen(!open);
   };
-  const user = JSON.parse(sessionStorage.getItem("User") || "null");
+
+  let user = JSON.parse(sessionStorage.getItem("User") || "null");
+  const userQuery = useQuery(
+    ["userSession"],
+    () => getUserById(user["$id"]),
+    {
+      // refetchOnMount : false,
+      keepPreviousData: true,
+      refetchInterval: false,
+      refetchOnWindowFocus: false,
+    }
+  );
+  if (userQuery.isLoading) {
+    return <div>Loading ...</div>;
+  }
+  user = userQuery.data;
+  // const user = JSON.parse(sessionStorage.getItem("User") || "null");
+
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
@@ -224,7 +244,9 @@ export default function Layout() {
                             height: "24px",
                             marginRight: "5px",
                           }}
-                          src={`/images/flags/${lang === "lo" ? "la" : lang}.svg`}
+                          src={`/images/flags/${
+                            lang === "lo" ? "la" : lang
+                          }.svg`}
                         />
                         <Typography>
                           {lang === "en"
@@ -307,7 +329,11 @@ export default function Layout() {
           >
             <div className="flex flex-col">
               {MenuItems.map((menu, index: number) => {
-                // console.log(menu);
+                const checkRole = menu.role.some((d) => d === user.role);
+                if (!checkRole) {
+                  return ;
+                }
+        
                 const isSelected = menu.url === lastPath;
                 return (
                   <div key={menu.name} className="mt-2">
@@ -356,6 +382,36 @@ export default function Layout() {
                   </div>
                 );
               })}
+
+              <div className="mt-2">
+                <ListItemButton
+                  // selected={true}
+                  onClick={() => {
+                    // console.log(menu, index);
+                    sessionStorage.clear();
+                    navigate(`/login`);
+                  }}
+                >
+                  <ListItemIcon className="-ml-1">
+                    {!open ? (
+                      <Tooltip
+                        sx={{ fontFamily: "BoonBaanRegular" }}
+                        title={"Logout"}
+                        placement="right"
+                      >
+                        <p>
+                          <Logout size="24" />
+                        </p>
+                      </Tooltip>
+                    ) : (
+                      <p className=" whitespace-nowrap flex ">
+                        <Logout size="24" />
+                        <span className="ml-4">{"Logout"}</span>{" "}
+                      </p>
+                    )}
+                  </ListItemIcon>
+                </ListItemButton>
+              </div>
             </div>
           </List>
         </div>

@@ -122,18 +122,18 @@ const Login = () => {
       console.log('resLogin',resLogin)
       // @ts-ignore
 
-      // localStorage.setItem("isLogin", true);
-      // const userLogin = { ...resLogin, ...user[0] };
-      // sessionStorage.setItem("User", JSON.stringify(userLogin));
-      // await addUserLog({
-      //   type: "login",
-      //   users: userLogin.$id,
-      //   timestamp: new Date(),
-      //   collection: "users",
-      // });
+      localStorage.setItem("isLogin", true);
+      const userLogin = { ...resLogin, ...user[0] };
+      sessionStorage.setItem("User", JSON.stringify(userLogin));
+      await addUserLog({
+        type: "login",
+        users: userLogin.$id,
+        timestamp: new Date(),
+        collection: "users",
+      });
 
-      // localStorage.setItem("User", JSON.stringify(resLogin));
-      // localStorage.setItem("User", JSON.stringify({}));
+      localStorage.setItem("User", JSON.stringify(resLogin));
+      localStorage.setItem("User", JSON.stringify({}));
       navigate(`/`);
     } catch (error) {
       console.log(error);

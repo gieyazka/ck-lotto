@@ -314,7 +314,7 @@ export default function App({ data }: { data: Data[] }) {
                         stroke="#B9BCC7"
                         strokeWidth="1.5"
                         strokeLinecap="round"
-                        stroke-linejoin="round"
+                        strokeLinejoin="round"
                       />
                     </g>
                     <defs>

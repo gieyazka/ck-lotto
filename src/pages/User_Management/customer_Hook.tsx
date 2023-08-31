@@ -1,13 +1,23 @@
 import Swal, { SweetAlertResult } from "sweetalert2";
 import {
-  addPoints,
+  addPromotions,
   addUserLog,
-  deletePoints,
+  deletePromotions,
+  deleteUser,
+  getCustomer,
+  getCustomerHideTell,
   getPoints,
+  getPromotions,
   getUserSession,
-  updatePoints,
+  updatePromotions,
 } from "../../utils/service";
-import { groupData, loadingStore, pointData, winPrice } from "../../utils/type";
+import {
+  groupData,
+  loadingStore,
+  promotionData,
+  userData,
+  winPrice,
+} from "../../utils/type";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
 import React from "react";
@@ -16,12 +26,20 @@ import { t } from "i18next";
 import { useLoading } from "../../store";
 import { useTheme } from "@mui/material";
 
-const usePoint = () => {
+const useHook = (data: any) => {
+  console.log("29", data);
   const queryClient = useQueryClient();
   const theme = useTheme();
   const user = getUserSession();
   const loadingStore = useLoading();
-  const [dialogState, setDialogState] = React.useState({
+  const [dialogState, setDialogState] = React.useState<{
+    open: boolean;
+    data: userData | undefined;
+  }>({
+    open: false,
+    data: undefined,
+  });
+  const [dialogCreateState, setDialogCreateState] = React.useState({
     open: false,
     data: undefined,
   });
@@ -42,10 +60,30 @@ const usePoint = () => {
       data: undefined,
     });
   };
+  const onOpenCreateDialog = (data: any) => {
+    setDialogCreateState({
+      open: true,
+      data: data,
+    });
+  };
+  const onCloseCreateDialog = () => {
+    setDialogCreateState({
+      open: false,
+      data: undefined,
+    });
+  };
   const dataQuery = useQuery(
-    ["points", paginationState.pageIndex, paginationState.pageSize, search],
-    () => getPoints(paginationState, search),
+    ["customer", paginationState.pageIndex, paginationState.pageSize, search],
+    () => {
+      //TODO: Checj role and create custom API
+      if (data.role === "external") {
+        return getCustomerHideTell(paginationState, search);
+      }
+
+      return getCustomer(paginationState, search);
+    },
     {
+      enabled: data !== undefined,
       refetchOnMount: "always",
       keepPreviousData: true,
       refetchInterval: false,
@@ -54,7 +92,7 @@ const usePoint = () => {
   );
   const addQuery = useMutation(
     (props: { data: any }) => {
-      return addPoints(props.data);
+      return addPromotions(props.data);
     },
     {
       onMutate: () => {
@@ -63,7 +101,7 @@ const usePoint = () => {
       onSuccess: async (data: any, variables: any, context?: any) => {
         await addUserLog({
           type: "create",
-          logData: JSON.stringify(variables),
+          logData: JSON.stringify(data),
           users: user.$id,
           timestamp: new Date(),
           collection: data.$collectionId,
@@ -91,8 +129,8 @@ const usePoint = () => {
   );
 
   const deleteQuery = useMutation(
-    (props: { docId: string }) => {
-      return deletePoints(props.docId);
+    (docId: string) => {
+      return deleteUser(docId);
     },
     {
       onMutate: () => {
@@ -126,8 +164,8 @@ const usePoint = () => {
     }
   );
   const updateQuery = useMutation(
-    (props: { data: pointData; docId: string }) => {
-      return updatePoints(props.data, props.docId);
+    (props: { data: promotionData; docId: string }) => {
+      return updatePromotions(props.data, props.docId);
     },
     {
       onMutate: () => {
@@ -162,14 +200,14 @@ const usePoint = () => {
   const onSubmit = (data: any) => {
     if (data.name === "") {
       callToast({
-        title: t("promotions.noPoint_name"),
+        title: t("promotions.noPromotion_name"),
         type: "error",
       });
       return;
     }
-    if (data.point == 0 || data.point === undefined) {
+    if (data.bonus == 0 || data.bonus === undefined) {
       callToast({
-        title: t("promotions.noPoint_bonus"),
+        title: t("promotions.noPromotion_bonus"),
         type: "error",
       });
       return;
@@ -188,13 +226,14 @@ const usePoint = () => {
       });
       return;
     }
-    if (data.type === "" || data.type === undefined) {
+    if (data.type === undefined || data.type === "") {
       callToast({
-        title: t("promotions.noBonus_type"),
+        title: t("promotions.noPromotion_type"),
         type: "error",
       });
       return;
     }
+
     Swal.fire({
       title: `${t("createConfirm")}`,
       icon: "info",
@@ -208,9 +247,9 @@ const usePoint = () => {
       if (result.isConfirmed) {
         const { email, $id, username, firstname, lastname, tel, role, type } =
           user;
-        // data.groups = data.groups.map((d: groupData) => d.$id);
+        data.groups = data.groups.map((d: groupData) => d.value.$id);
         data.users = $id;
-        console.log("data", data);
+
         // return ;
         await addQuery.mutateAsync({ data });
         // onCloseDialog();
@@ -230,29 +269,29 @@ const usePoint = () => {
       reverseButtons: true,
     }).then(async (result) => {
       if (result.isConfirmed) {
-        await deleteQuery.mutateAsync({ docId });
+        await deleteQuery.mutateAsync(docId);
       }
     });
   };
 
-  const onEdit = async (data: pointData, docId: string) => {
+  const onEdit = async (data: promotionData, docId: string) => {
     if (data.name === "") {
       callToast({
-        title: t("promotions.noPoint_name"),
+        title: t("promotions.noPromotion_name"),
         type: "error",
       });
       return;
     }
-    if (data.point == 0 || data.point === undefined) {
+    if (data.type === undefined || data.type === "") {
       callToast({
-        title: t("promotions.noPoint_bonus"),
+        title: t("promotions.noPromotion_type"),
         type: "error",
       });
       return;
     }
-    if (data.type === "" || data.type === undefined) {
+    if (data.bonus == 0 || data.bonus === undefined) {
       callToast({
-        title: t("promotions.noBonus_type"),
+        title: t("promotions.noPromotion_bonus"),
         type: "error",
       });
       return;
@@ -271,6 +310,7 @@ const usePoint = () => {
       });
       return;
     }
+    console.log("data", data);
     Swal.fire({
       title: `${t("updateConfirm")}`,
       icon: "info",
@@ -282,6 +322,7 @@ const usePoint = () => {
       reverseButtons: true,
     }).then(async (result) => {
       if (result.isConfirmed) {
+        data.groups = data.groups.map((d: groupData) => d.value.$id);
         await updateQuery.mutateAsync({ data, docId });
         onCloseDialog();
       }
@@ -292,7 +333,7 @@ const usePoint = () => {
     if (text.length >= 3 || text.length === 0) {
       queryClient.cancelQueries({
         queryKey: [
-          "points",
+          "customer",
           paginationState.pageIndex,
           paginationState.pageSize,
           search,
@@ -316,7 +357,11 @@ const usePoint = () => {
     paginationState,
     onChangeSearch,
     dialogState,
+    setSearch,
+    search,
+    onCloseCreateDialog,
+    onOpenCreateDialog,
   };
 };
 
-export default usePoint;
+export default useHook;

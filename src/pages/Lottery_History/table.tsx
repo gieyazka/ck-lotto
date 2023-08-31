@@ -12,6 +12,7 @@ import { MaterialReactTable } from "material-react-table";
 import { UseQueryResult } from "react-query";
 import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
+import { userData } from "../../utils/type";
 
 //If using TypeScript, define the shape of your data (optional, but recommended)
 
@@ -24,6 +25,7 @@ function App({
   query,
   paginationState,
   setPaginationState,
+  user,
 }: {
   onDelete: (docId: string) => Promise<void>;
   total: number;
@@ -31,11 +33,12 @@ function App({
   query: UseQueryResult;
   paginationState: { pageIndex: number; pageSize: number };
   setPaginationState: any;
+  user: userData;
 }) {
   const { t } = useTranslation();
   //column definitions - strongly typed if you are using TypeScript (optional, but recommended)
-  const columns = useMemo<MRT_ColumnDef<any>[]>(
-    () => [
+  const columns = useMemo<MRT_ColumnDef<any>[]>(() => {
+    const columns = [
       {
         accessorFn: (originalRow) =>
           dayjs(originalRow.date).format("DD-MM-YYYY"), //alternate way
@@ -58,7 +61,18 @@ function App({
         ), //optional custom markup
       },
 
-      {
+      // {
+      //   // accessorFn: (originalRow) => originalRow.isSell, //alternate way
+      //   header: "control",
+      //   Header: (
+      //     <div style={{ fontFamily: "BoonBaanRegular" }}>
+      //       {t("donotsell.control")}
+      //     </div>
+      //   ),
+      // },
+    ];
+    if (user.role !== "external") {
+      columns.push({
         accessorFn: (originalRow) => null, //alternate way
         id: "action", //id required if you use accessorFn instead of accessorKey
         header: "action",
@@ -95,19 +109,10 @@ function App({
             </div>
           );
         }, //render Date as a string
-      },
-      // {
-      //   // accessorFn: (originalRow) => originalRow.isSell, //alternate way
-      //   header: "control",
-      //   Header: (
-      //     <div style={{ fontFamily: "BoonBaanRegular" }}>
-      //       {t("donotsell.control")}
-      //     </div>
-      //   ),
-      // },
-    ],
-    [i18n.language]
-  );
+      });
+    }
+    return columns;
+  }, [i18n.language]);
   return (
     <div className="mt-2">
       <MaterialReactTable
@@ -190,7 +195,6 @@ function App({
             //   border: "1px solid #E0E0E0",
           },
         }}
-      
       />
     </div>
   );
