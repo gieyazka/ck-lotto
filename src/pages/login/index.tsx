@@ -80,9 +80,9 @@ const Login = () => {
       });
       return;
     }
-    loadingStore.setLoad(true);
+    // loadingStore.setLoad(true);
+    console.log("", 84);
     const user = await getUser(data.username);
-
     if (user.length === 0) {
       callSweetAlert({
         type: "error",
@@ -119,7 +119,7 @@ const Login = () => {
       } else {
         localStorage.removeItem("userRemember");
       }
-      console.log('resLogin',resLogin)
+      console.log("resLogin", resLogin);
       // @ts-ignore
 
       localStorage.setItem("isLogin", true);

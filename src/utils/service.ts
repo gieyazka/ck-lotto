@@ -22,12 +22,14 @@ import { t } from "i18next";
 
 const env = import.meta.env
 const client = new Client();
+client
+    .setEndpoint('https://ck.moevedigital.com/v1')
+    .setProject('CKLOTTO88')
+// .setKey('285d15ef4917e100f835aa5f633f2ec8f0026b400d94fbe8e2b7bc4cf2718cabbcff6b123e5bc810f15a9136a3a4c53d9a861e34d89e7f91fc266a49285e23c4ac4a5a467f8c7d2e40f1e16471560c0ce1dfc23881fcba4a4e4e651616c533cbfb9b432a879ebe240f4dd0aad19ad501487fb91cde1d19f4a868dd2ef4357cc8');         // Your secret API key
+
 const databases = new Databases(client);
 const storage = new Storage(client);
 const account = new Account(client);
-client
-    .setEndpoint('https://ck.moevedigital.com/v1')
-    .setProject('CKLOTTO88');
 
 const addUserLog = async (data: logsData) => {
     try {
@@ -105,14 +107,18 @@ const removeAppwriteSession = async () => {
     });
 }
 const getUser = async (username: string) => {
-    const res = await databases.listDocuments(
-        'lotto',
-        'users',
-        [
-            Query.equal('username', username),
-        ]
-    );
-    return res.documents
+    const res = await axios.post(`${env.VITE_backend}/getUser`, {
+        username
+    })
+    return res.data
+    // const res = await databases.listDocuments(
+    //     'lotto',
+    //     'users',
+    //     [
+    //         Query.equal('username', username),
+    //     ]
+    // );
+    // return res.documents
 }
 const getUserByEmail = async (email: string) => {
 
@@ -660,7 +666,7 @@ const getCustomerHideTell = async (pagination: { pageIndex: number, pageSize: nu
             pagination, textSearch
         })
         return res.data
-    } catch (error : Error) {
+    } catch (error: Error) {
         throw new Error(error).message
     }
 
